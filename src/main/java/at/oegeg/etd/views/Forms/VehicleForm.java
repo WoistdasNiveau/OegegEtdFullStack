@@ -1,41 +1,39 @@
-package at.oegeg.etd.views.VehiclesView;
+package at.oegeg.etd.views.Forms;
 
-import at.oegeg.etd.DataTransferObjects.Request.VehicleRequest;
-import at.oegeg.etd.DataTransferObjects.Response.VehicleResponse;
-import at.oegeg.etd.Entities.VehicleEntity;
+import at.oegeg.etd.DataTransferObjects.DisplayModels.VehicleDisplay;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.details.Details;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.shared.Registration;
-import org.springframework.context.annotation.Bean;
 
 public class VehicleForm extends FormLayout
 {
     // == Binders ==
-    Binder<VehicleResponse> binder = new BeanValidationBinder<>(VehicleResponse.class);
+    Binder<VehicleDisplay> binder = new BeanValidationBinder<>(VehicleDisplay.class);
     // == view fields ==
     TextField type = new TextField("Type");
-    TextField number = new TextField("Type");
-    TextField status = new TextField("Type");
-    TextField stand = new TextField("Type");
+    TextField number = new TextField("Number");
+    TextField status = new TextField("Status");
+    TextField stand = new TextField("Stand");
     Button save = new Button("Save");
     Button delete = new Button("Delete");
     Button cancel = new Button("Cancel");
 
     // == private fields ==
-    private VehicleResponse vehicle;
+    private VehicleDisplay vehicle;
+    private boolean deleteEnabled = false;
 
-    public VehicleForm()
+    public VehicleForm(boolean deleteEnabled)
     {
+        this.deleteEnabled = deleteEnabled;
         binder.bindInstanceFields(this);
         addClassName("createVehicleForm");
 
@@ -43,16 +41,22 @@ public class VehicleForm extends FormLayout
     }
 
     // == public methods ==
-    public void SetVehicle(VehicleResponse vehicle)
+    public void SetVehicle(VehicleDisplay vehicle)
     {
         this.vehicle = vehicle;
         binder.readBean(vehicle);
+    }
+
+    public void SetDeleteEnabled(boolean bool)
+    {
+        this.deleteEnabled = bool;
     }
 
     // == private methods ==
     private Component createButtonlayout()
     {
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
         cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 
         save.addClickListener(event -> ValidateAndSave());
@@ -62,7 +66,15 @@ public class VehicleForm extends FormLayout
         save.addClickShortcut(Key.ENTER);
         cancel.addClickShortcut(Key.ESCAPE);
 
-        HorizontalLayout layout = new HorizontalLayout(save,cancel);
+        HorizontalLayout layout;
+        if(deleteEnabled)
+        {
+            layout = new HorizontalLayout(save, delete, cancel);
+        }
+        else
+        {
+            layout = new HorizontalLayout(save, cancel);
+        }
         return layout;
     }
 
@@ -82,16 +94,16 @@ public class VehicleForm extends FormLayout
     // == events ==
     public static abstract class VehicleFormEvent extends ComponentEvent<VehicleForm>
     {
-        private VehicleResponse vehicle;
-        protected VehicleFormEvent(VehicleForm source, VehicleResponse vehicle)
+        private VehicleDisplay vehicle;
+        protected VehicleFormEvent(VehicleForm source, VehicleDisplay vehicle)
         {
             super(source,false);
             this.vehicle = vehicle;
         }
 
-        public VehicleRequest getVehicle()
+        public VehicleDisplay getVehicle()
         {
-            return VehicleRequest.builder()
+            return VehicleDisplay.builder()
                     .identifier(vehicle.getIdentifier())
                     .number(vehicle.getNumber())
                     .stand(vehicle.getStand())
@@ -103,7 +115,7 @@ public class VehicleForm extends FormLayout
 
     public static class SaveEvent extends VehicleFormEvent
     {
-        SaveEvent(VehicleForm source, VehicleResponse response)
+        SaveEvent(VehicleForm source, VehicleDisplay response)
         {
             super(source,response);
         }
@@ -111,7 +123,7 @@ public class VehicleForm extends FormLayout
 
     public static class DeleteEvent extends VehicleFormEvent
     {
-        DeleteEvent(VehicleForm source, VehicleResponse response)
+        DeleteEvent(VehicleForm source, VehicleDisplay response)
         {
             super(source,response);
         }

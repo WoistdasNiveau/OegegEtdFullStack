@@ -2,8 +2,6 @@ package at.oegeg.etd.views;
 
 
 import at.oegeg.etd.Security.SecurityService;
-import at.oegeg.etd.views.about.AboutView;
-import at.oegeg.etd.views.VehiclesView.VehiclesView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
@@ -106,9 +104,9 @@ public class MainLayout extends AppLayout {
 
     private MenuItemInfo[] createMenuItems() {
         return new MenuItemInfo[]{ //
-                new MenuItemInfo("Hello World", LineAwesomeIcon.GLOBE_SOLID.create(), VehiclesView.class), //
+                new MenuItemInfo("Vehicles", LineAwesomeIcon.GLOBE_SOLID.create(), VehiclesView.class), //
 
-                new MenuItemInfo("About", LineAwesomeIcon.FILE.create(), AboutView.class), //
+                //new MenuItemInfo("About", LineAwesomeIcon.FILE.create(), AboutView.class), //
 
 
         };

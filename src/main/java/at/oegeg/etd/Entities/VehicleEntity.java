@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
+import org.hibernate.annotations.Formula;
 
 import java.util.List;
 
@@ -34,6 +35,10 @@ public class VehicleEntity
     @NotBlank
     private String stand;
     private Priorities priority;
+
+    @Transient
+    @Formula("(SELECT COUNT(we) FROM WorkEntity we WHERE we.vehicle.id = id)")
+    private Long workCount;
 
     @OneToMany(mappedBy="vehicle", fetch = FetchType.EAGER)
     @Cascade(CascadeType.ALL)

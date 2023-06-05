@@ -1,6 +1,7 @@
 package at.oegeg.etd.DataTransferObjects.Services.Implementations;
 
-import at.oegeg.etd.DataTransferObjects.Request.VehicleRequest;
+import at.oegeg.etd.DataTransferObjects.DisplayModels.VehicleDisplay;
+import at.oegeg.etd.DataTransferObjects.DisplayModels.WorkDisplay;
 import at.oegeg.etd.DataTransferObjects.Request.WorkRequest;
 import at.oegeg.etd.DataTransferObjects.Response.UserResponse;
 import at.oegeg.etd.DataTransferObjects.Response.VehicleResponse;
@@ -30,13 +31,19 @@ public class VehicleService
     private final IWorkRepository _workRepository;
 
     // == public methods ==
-    public List<VehicleResponse> FindAllVehicles(String filterText)
+    public List<VehicleDisplay> FindAllVehicles(String filterText)
     {
         if(filterText == null || filterText.isEmpty())
         {
-            return VehicleEntitiesToVehicleResponse(_vehicleRepository.findAll());
+            return VehicleEntitiesToVehicleDisplay(_vehicleRepository.findAll());
         }
-        return VehicleEntitiesToVehicleResponse(_vehicleRepository.findBySearchString(filterText));
+        return VehicleEntitiesToVehicleDisplay(_vehicleRepository.findBySearchString(filterText));
+    }
+
+    public VehicleDisplay FindVehicleByIdentifier(String identifier)
+    {
+        VehicleEntity entity = _vehicleRepository.findByIdentifier(identifier).orElseThrow();
+        return VehicleEntityToDisplay(entity);
     }
 
     public long VehiclesCount()
@@ -50,7 +57,7 @@ public class VehicleService
         _vehicleRepository.delete(vehicle);
     }
 
-    public void SaveVehicle(VehicleRequest vehicleRequest)//, String token)
+    public void SaveVehicle(VehicleDisplay vehicleRequest)//, String token)
     {
         //UserEntity user = _userRepository.findByIdentifier(_jwtService.ExtractUsername(token)).orElseThrow();
         VehicleEntity entity;
@@ -65,7 +72,7 @@ public class VehicleService
                 .build();
         if(vehicleRequest.getWorks()!= null && vehicleRequest.getWorks().stream().count() > 0)
         {
-            List<WorkEntity> works = WorkRequestToWorkEntity(vehicleRequest.getWorks());
+            List<WorkEntity> works = WorkDisplayToWorkEntity(vehicleRequest.getWorks());
             works.forEach(t -> t.setVehicle(entity));
             //works.forEach(t -> t.setCreatedBy(user));
             entity.setWorks(works);
@@ -73,19 +80,42 @@ public class VehicleService
         _vehicleRepository.save(entity);
     }
 
+    public void UpdateVehicle(VehicleDisplay display)
+    {
+        VehicleEntity entity = _vehicleRepository.findByIdentifier(display.getIdentifier()).orElseThrow();
+        entity.setNumber(display.getNumber());
+        entity.setType(display.getType());
+        entity.setStatus(display.getStatus());
+        entity.setStand(display.getStand());
+        _vehicleRepository.save(entity);
+    }
+
 
     // == private methods ==
-    private List<VehicleResponse> VehicleEntitiesToVehicleResponse(List<VehicleEntity> entities)
+
+    private VehicleDisplay VehicleEntityToDisplay(VehicleEntity entity)
     {
-        return entities.stream().map(e -> VehicleResponse.builder()
+        return VehicleDisplay.builder()
+                .identifier(entity.getIdentifier())
+                .number(entity.getNumber())
+                .type(entity.getType())
+                .status(entity.getStatus())
+                .stand(entity.getStand())
+                .priority(entity.getPriority())
+                .workCount(entity.getWorkCount())
+                .works(WorkEntityToWorkDisplay(entity.getWorks()))
+                .build();
+    }
+    private List<VehicleDisplay> VehicleEntitiesToVehicleDisplay(List<VehicleEntity> entities)
+    {
+        return entities.stream().map(e -> VehicleDisplay.builder()
                         .identifier(e.getIdentifier())
-                        .Number(e.getNumber())
-                        .Type(e.getType())
-                        .Status(e.getStatus())
-                        .Stand(e.getStand())
-                        .Priority(e.getPriority())
-                        .workCount(_workRepository.countWorkEntityByVehicle(e))
-                        .Works(WorkEntityToWorkResponse(e.getWorks())).build())
+                        .number(e.getNumber())
+                        .type(e.getType())
+                        .status(e.getStatus())
+                        .stand(e.getStand())
+                        .workCount(e.getWorkCount() != null ? e.getWorkCount() : 0)
+                .build())
                 .collect(Collectors.toList());
     }
 
@@ -93,7 +123,7 @@ public class VehicleService
     {
         List<VehicleEntity> v = new ArrayList<>();
         v.add(entity);
-        return (VehicleResponse)((List)VehicleEntitiesToVehicleResponse(v)).stream().findFirst().orElseThrow();
+        return (VehicleResponse)((List)VehicleEntitiesToVehicleDisplay(v)).stream().findFirst().orElseThrow();
     }
     private List<WorkEntity> WorkRequestToWorkEntity(List<WorkRequest> requests)
     {
@@ -109,6 +139,39 @@ public class VehicleService
                     .build());
         }
         return works;
+    }
+
+    private List<WorkEntity> WorkDisplayToWorkEntity(List<WorkDisplay> requests)
+    {
+        List<WorkEntity> works = new ArrayList<WorkEntity>();
+        for(WorkDisplay request : requests)
+        {
+            UserEntity user = _userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier(request.getResponsiblePerson()).orElse(null);
+            works.add(WorkEntity.builder()
+                    .responsiblePerson(user)
+                    .description(request.getDescription())
+                    .priority(request.getPriority())
+                    .identifier(UUID.randomUUID().toString())
+                    .build());
+        }
+        return works;
+    }
+
+    private List<WorkDisplay> WorkEntityToWorkDisplay(List<WorkEntity> entities)
+    {
+        List<WorkDisplay> response = new ArrayList<>();
+        for(WorkEntity entity : entities)
+        {
+            WorkDisplay r = WorkDisplay.builder()
+                    .description(entity.getDescription())
+                    .priority(entity.getPriority())
+                    .identifier(entity.getIdentifier())
+                    .build();
+            if(entity.getResponsiblePerson() != null)
+                r.setResponsiblePerson(entity.getResponsiblePerson().getName());
+            response.add(r);
+        }
+        return response;
     }
 
     private List<WorkResponse> WorkEntityToWorkResponse(List<WorkEntity> entities)

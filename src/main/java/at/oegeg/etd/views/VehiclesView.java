@@ -1,16 +1,20 @@
-package at.oegeg.etd.views.VehiclesView;
+package at.oegeg.etd.views;
 
-import at.oegeg.etd.DataTransferObjects.Response.VehicleResponse;
+import at.oegeg.etd.DataTransferObjects.DisplayModels.VehicleDisplay;
 import at.oegeg.etd.DataTransferObjects.Services.Implementations.VehicleService;
+import at.oegeg.etd.views.Forms.VehicleForm;
 import at.oegeg.etd.views.MainLayout;
+import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -25,7 +29,7 @@ import jakarta.annotation.security.RolesAllowed;
 public class VehiclesView extends VerticalLayout
 {
     // == properties ==
-    Grid<VehicleResponse> vehicleGrid = new Grid<>(VehicleResponse.class,false);
+    Grid<VehicleDisplay> vehicleGrid = new Grid<>(VehicleDisplay.class,false);
     TextField filterText = new TextField();
     VehicleForm vehicleForm;
 
@@ -74,7 +78,7 @@ public class VehiclesView extends VerticalLayout
 
     private void configureVehicleForm()
     {
-        vehicleForm = new VehicleForm();
+        vehicleForm = new VehicleForm(false);
         vehicleForm.setWidth("25em");
 
         vehicleForm.AddListener(VehicleForm.SaveEvent.class, this::SaveVehicle);
@@ -115,27 +119,27 @@ public class VehiclesView extends VerticalLayout
     private void AddVehicle()
     {
         vehicleGrid.asSingleSelect().clear();
-        EditVehicle(new VehicleResponse());
+        EditVehicle(new VehicleDisplay());
     }
 
     private void configureGrid()
     {
         vehicleGrid.addClassName("list-view");
         vehicleGrid.setSizeFull();
+        vehicleGrid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
 
         //vehicleGrid.setColumns("Type", "Number", "Status", "Stand", "Works");
-        vehicleGrid.addColumn(VehicleResponse::getType).setHeader("Type").setSortable(true).setTextAlign(ColumnTextAlign.CENTER);
-        vehicleGrid.addColumn(VehicleResponse::getNumber).setHeader("Number").setSortable(true).setTextAlign(ColumnTextAlign.CENTER);
-        vehicleGrid.addColumn(VehicleResponse::getStatus).setHeader("Status").setSortable(true).setTextAlign(ColumnTextAlign.CENTER);
-        vehicleGrid.addColumn(VehicleResponse::getStand).setHeader("Stand").setSortable(true).setTextAlign(ColumnTextAlign.CENTER);
-        vehicleGrid.addColumn(VehicleResponse::getWorkCount).setHeader("Works").setSortable(true).setTextAlign(ColumnTextAlign.CENTER);
+        vehicleGrid.addColumn(VehicleDisplay::getType).setHeader("Type").setSortable(true).setTextAlign(ColumnTextAlign.CENTER);
+        vehicleGrid.addColumn(VehicleDisplay::getNumber).setHeader("Number").setSortable(true).setTextAlign(ColumnTextAlign.CENTER);
+        vehicleGrid.addColumn(VehicleDisplay::getStatus).setHeader("Status").setSortable(true).setTextAlign(ColumnTextAlign.CENTER);
+        vehicleGrid.addColumn(VehicleDisplay::getStand).setHeader("Stand").setSortable(true).setTextAlign(ColumnTextAlign.CENTER);
+        vehicleGrid.addColumn(WorksColumnRenderer()).setHeader("Works").setSortable(true).setTextAlign(ColumnTextAlign.CENTER);
 
         vehicleGrid.getColumns().forEach(col -> col.setAutoWidth(true));
 
-        vehicleGrid.asSingleSelect().addValueChangeListener(e -> EditVehicle(e.getValue()));
     }
 
-    private void EditVehicle(VehicleResponse vehicle)
+    private void EditVehicle(VehicleDisplay vehicle)
     {
         if(vehicle == null)
         {
@@ -145,6 +149,21 @@ public class VehiclesView extends VerticalLayout
         vehicleForm.SetVehicle(vehicle);
         vehicleForm.setVisible(true);
         addClassName("editing");
+    }
+
+    private ComponentRenderer<Button, VehicleDisplay> WorksColumnRenderer()
+    {
+        return new ComponentRenderer<Button, VehicleDisplay>(t ->
+        {
+            Button worksButton = new Button(String.valueOf(t.getWorkCount()));
+            worksButton.getElement().setProperty("Vehicle",t.getIdentifier());
+            worksButton.addClickListener(this::WorksColumnClickListener);
+            return worksButton;
+        });
+    }
+    private void WorksColumnClickListener(ClickEvent<Button> buttonClickEvent)
+    {
+        UI.getCurrent().getPage().setLocation("vehicle/" + buttonClickEvent.getSource().getElement().getProperty("Vehicle"));
     }
 
 }
