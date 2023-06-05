@@ -1,10 +1,12 @@
 package at.oegeg.etd.views;
 
 
+import at.oegeg.etd.Security.SecurityService;
 import at.oegeg.etd.views.about.AboutView;
-import at.oegeg.etd.views.helloworld.HelloWorldView;
+import at.oegeg.etd.views.VehiclesView.VehiclesView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.applayout.AppLayout;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Header;
@@ -66,8 +68,10 @@ public class MainLayout extends AppLayout {
         }
 
     }
-
-    public MainLayout() {
+    private final SecurityService _securityService;
+    public MainLayout(SecurityService securityService)
+    {
+        _securityService = securityService;
         addToNavbar(createHeaderContent());
     }
 
@@ -94,6 +98,7 @@ public class MainLayout extends AppLayout {
             list.add(menuItem);
 
         }
+        list.add(new Button("Log out", e-> _securityService.Logout()));
 
         header.add(layout, nav);
         return header;
@@ -101,9 +106,10 @@ public class MainLayout extends AppLayout {
 
     private MenuItemInfo[] createMenuItems() {
         return new MenuItemInfo[]{ //
-                new MenuItemInfo("Hello World", LineAwesomeIcon.GLOBE_SOLID.create(), HelloWorldView.class), //
+                new MenuItemInfo("Hello World", LineAwesomeIcon.GLOBE_SOLID.create(), VehiclesView.class), //
 
                 new MenuItemInfo("About", LineAwesomeIcon.FILE.create(), AboutView.class), //
+
 
         };
     }
