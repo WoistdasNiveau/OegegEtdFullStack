@@ -40,8 +40,8 @@ public class VehicleEntity
     @Formula("(SELECT COUNT(we) FROM WorkEntity we WHERE we.vehicle.id = id)")
     private Long workCount;
 
-    @OneToMany(mappedBy="vehicle", fetch = FetchType.EAGER)
-    @Cascade(CascadeType.ALL)
+    @OneToMany(mappedBy="vehicle", fetch = FetchType.EAGER, orphanRemoval = true)
+    @Cascade({CascadeType.PERSIST,CascadeType.MERGE,CascadeType.REMOVE})
     private List<WorkEntity> works;
 
     @ManyToOne
@@ -54,5 +54,15 @@ public class VehicleEntity
     public String toString()
     {
         return identifier + "; " + number;
+    }
+
+    // == public methods ==
+    @PreRemove
+    private void PreRemove()
+    {
+        if(works != null)
+        {
+            works.clear();
+        }
     }
 }

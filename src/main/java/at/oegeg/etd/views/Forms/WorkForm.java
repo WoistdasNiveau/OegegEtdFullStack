@@ -5,20 +5,24 @@ import at.oegeg.etd.Entities.Enums.Priorities;
 import at.oegeg.etd.Entities.UserEntity;
 import at.oegeg.etd.Repositories.IUserEntityRepository;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.orderedlayout.FlexLayout;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.shared.Registration;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.stream.Collectors;
 
 public class WorkForm extends FormLayout
 {
@@ -26,42 +30,88 @@ public class WorkForm extends FormLayout
     Binder<WorkDisplay> binder = new BeanValidationBinder<>(WorkDisplay.class);
 
     // == view fields ==
-    ComboBox<UserEntity> userEntityComboBox = new ComboBox<>("Responsible Person");
-    TextField descriptionField = new TextField();
-    Select<Priorities> prioritiesSelect = new Select<>();
+    ComboBox<String> responsiblePerson = new ComboBox<>("Responsible Person");
+    TextField description = new TextField();
+    Select<Priorities> priority = new Select<>();
+    Button saveButton = new Button();
+    public Button deleteButton = new Button();
+    Button cancelButton = new Button();
 
     // == private fields ==
     private final IUserEntityRepository _userRepository;
-    // == constructor ==
+    private WorkDisplay selectedWork;
 
+    // == constructor ==
     public WorkForm(IUserEntityRepository userRepository)
     {
         _userRepository = userRepository;
 
+        binder.bind(description, WorkDisplay::getDescription, WorkDisplay::setDescription);
+        binder.bind(priority, WorkDisplay::getPriority, WorkDisplay::setPriority);
+        binder.bind(responsiblePerson, WorkDisplay::getResponsiblePerson, WorkDisplay::setResponsiblePerson);
+
         UpdateUsers();
         ConfigurePriorities();
-        descriptionField.setLabel("Description");
+        description.setLabel("Description");
 
         add(
                 new H1("Work"),
-                userEntityComboBox,
-                descriptionField,
-                prioritiesSelect
+                responsiblePerson,
+                description,
+                priority,
+                CreateButtonLayout()
         );
     }
 
+    // == public methods ==
+    public void SetSelectedWork(WorkDisplay workDisplay)
+    {
+        selectedWork = workDisplay;
+        binder.readBean(workDisplay);
+    }
     // == private methods ==
+    private Component CreateButtonLayout()
+    {
+        saveButton.setText("Save");
+        deleteButton.setText("Delete");
+        cancelButton.setText("Cancel");
+
+        saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
+        cancelButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+
+        saveButton.addClickListener(event -> ValidateAndSave());
+        deleteButton.addClickListener(event -> fireEvent(new DeleteEvent(this, selectedWork)));
+        cancelButton.addClickListener(event -> fireEvent(new CloseEvent(this)));
+
+        saveButton.addClickShortcut(Key.ENTER);
+        cancelButton.addClickShortcut(Key.ESCAPE);
+
+        return new HorizontalLayout(saveButton, deleteButton, cancelButton);
+    }
+
+    private void ValidateAndSave()
+    {
+        try
+        {
+            binder.writeBean(selectedWork);
+            fireEvent(new SaveEvent(this, selectedWork));
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
+    }
     private void UpdateUsers()
     {
-        userEntityComboBox.setItems(_userRepository.findAll());
-        userEntityComboBox.setItemLabelGenerator(UserEntity::getName);
+        responsiblePerson.setItems(_userRepository.findAll().stream().map(m -> m.getName()).collect(Collectors.toList()));
     }
 
     private void ConfigurePriorities()
     {
-        prioritiesSelect.setRenderer(CreatePrioritiesRenderer());
-        prioritiesSelect.setLabel("Priority");
-        prioritiesSelect.setItems(Priorities.values());
+        priority.setRenderer(CreatePrioritiesRenderer());
+        priority.setLabel("Priority");
+        priority.setItems(Priorities.values());
     }
     private static ComponentRenderer<Span, Priorities> CreatePrioritiesRenderer()
     {
@@ -103,5 +153,50 @@ public class WorkForm extends FormLayout
             }
             return result;
         });
+    }
+
+    // == events ==
+    public static abstract class WorkFormEvent extends ComponentEvent<WorkForm>
+    {
+        private WorkDisplay workDisplay;
+        protected WorkFormEvent(WorkForm source, WorkDisplay workDisplay)
+        {
+            super(source,false);
+            this.workDisplay = workDisplay;
+        }
+
+        public WorkDisplay getWorkDisplay()
+        {
+            return workDisplay;
+        }
+    }
+
+    public static class SaveEvent extends WorkFormEvent
+    {
+        SaveEvent(WorkForm source, WorkDisplay response)
+        {
+            super(source,response);
+        }
+    }
+
+    public static class DeleteEvent extends WorkFormEvent
+    {
+        DeleteEvent(WorkForm source, WorkDisplay response)
+        {
+            super(source,response);
+        }
+    }
+
+    public static class CloseEvent extends WorkFormEvent
+    {
+        CloseEvent(WorkForm source)
+        {
+            super(source,null);
+        }
+    }
+
+    public <T extends ComponentEvent<?>> Registration AddListener(Class<T> eventType, ComponentEventListener<T> listener)
+    {
+        return getEventBus().addListener(eventType,listener);
     }
 }

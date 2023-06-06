@@ -1,11 +1,14 @@
 package at.oegeg.etd.Entities;
 
 import at.oegeg.etd.Entities.Enums.Role;
+import jakarta.annotation.PostConstruct;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -97,5 +100,35 @@ public class UserEntity implements UserDetails
     public String toString()
     {
         return getName() + getEmail() + getTelephoneNumber(); //+ getAuthorities();
+    }
+
+    @PreRemove
+    private void PreRemove()
+    {
+        if(createdWorks != null)
+        {
+            for(WorkEntity entity : createdWorks)
+                entity.setCreatedBy(null);
+        }
+        if(updatedWorks != null)
+        {
+            for(WorkEntity entity : updatedWorks)
+                entity.setCreatedBy(null);
+        }
+        if(createdVehicles != null)
+        {
+            for(VehicleEntity entity : createdVehicles)
+                entity.setCreatedBy(null);
+        }
+        if(updatedVehicles != null)
+        {
+            for(VehicleEntity entity : updatedVehicles)
+                entity.setCreatedBy(null);
+        }
+        if(responsibleFor != null)
+        {
+            for(WorkEntity entity : responsibleFor)
+                entity.setCreatedBy(null);
+        }
     }
 }
