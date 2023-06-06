@@ -14,6 +14,7 @@ import at.oegeg.etd.Repositories.IUserEntityRepository;
 import at.oegeg.etd.Repositories.IVehicleRepository;
 import at.oegeg.etd.Repositories.IWorkRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -44,6 +45,26 @@ public class VehicleService
     {
         VehicleEntity entity = _vehicleRepository.findByIdentifier(identifier).orElseThrow();
         return VehicleEntityToDisplay(entity);
+    }
+
+    public List<VehicleDisplay> FindAllbyCreatedBy(String userIdentifier, String filter)
+    {
+        UserEntity user = _userRepository.findByIdentifier(userIdentifier).orElseThrow();
+        if(filter == null || filter.equals(""))
+        {
+            return VehicleEntitiesToVehicleDisplay(_vehicleRepository.findAllByCreatedBy(user).orElse(new ArrayList<>()));
+        }
+        return VehicleEntitiesToVehicleDisplay(_vehicleRepository.findBySearchStringAndCreatedBy(filter,user));
+    }
+
+    public List<VehicleDisplay> FindAllbyUpdatedBy(String userIdentifier, String filter)
+    {
+        UserEntity user = _userRepository.findByIdentifier(userIdentifier).orElseThrow();
+        if(filter == null || filter.equals(""))
+        {
+            return VehicleEntitiesToVehicleDisplay(_vehicleRepository.findAllByUpdatedBy(user).orElse(new ArrayList<>()));
+        }
+        return VehicleEntitiesToVehicleDisplay(_vehicleRepository.findBySearchStringAndUpdatedBy(filter, user));
     }
 
     public long VehiclesCount()
@@ -89,7 +110,6 @@ public class VehicleService
         entity.setStand(display.getStand());
         _vehicleRepository.save(entity);
     }
-
 
     // == private methods ==
 

@@ -1,6 +1,7 @@
 package at.oegeg.etd.DataTransferObjects.Services.Implementations;
 
 import at.oegeg.etd.DataTransferObjects.DisplayModels.WorkDisplay;
+import at.oegeg.etd.Entities.UserEntity;
 import at.oegeg.etd.Entities.WorkEntity;
 import at.oegeg.etd.Repositories.IUserEntityRepository;
 import at.oegeg.etd.Repositories.IVehicleRepository;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -28,11 +30,11 @@ public class WorkService
     // == public methods ==
     public void SaveWork(WorkDisplay workDisplay, String vehicleIdentifier)
     {
-        if(workDisplay.getIdentifier().equals(""))
+        if(workDisplay.getIdentifier() == null || workDisplay.getIdentifier().equals(""))
         {
             WorkEntity entity = WorkDisplayToEntity(workDisplay);
             entity.setVehicle(_vehicleRepository.findByIdentifier(vehicleIdentifier).orElseThrow());
-            entity.setUpdatedBy(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier(VaadinSession.getCurrent().getAttribute("username")
+            entity.setUpdatedBy(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier(SecurityContextHolder.getContext().getAuthentication().getName()
                     .toString()).orElseThrow());
             _workRepository.save(entity);
         }
@@ -50,10 +52,42 @@ public class WorkService
         }
     }
 
+    public List<WorkDisplay> FindAllByResponsiblePerson(String responsiblePesonIdentifier, String filter)
+    {
+        UserEntity user = _userRepository.findByIdentifier(responsiblePesonIdentifier).orElseThrow();
+        if(filter == null || filter.equals(""))
+        {
+            return WorkEntitiesToDisplay(_workRepository.findByResponsiblePerson(user).orElse(new ArrayList<>()));
+        }
+        return  WorkEntitiesToDisplay(_workRepository.findByResponsiblePersonAndSearchString(user,filter));
+    }
+
+    public List<WorkDisplay> FindAllByCreatedBy(String responsiblePesonIdentifier, String filter)
+    {
+        UserEntity user = _userRepository.findByIdentifier(responsiblePesonIdentifier).orElseThrow();
+        if(filter == null || filter.equals(""))
+        {
+            return WorkEntitiesToDisplay(_workRepository.findByCreatedBy(user).orElse(new ArrayList<>()));
+        }
+        return WorkEntitiesToDisplay(_workRepository.findByCreatedByAndSearchString(user,filter));
+    }
+
+    public List<WorkDisplay> FindAllByUpdatedBy(String responsiblePesonIdentifier, String filter)
+    {
+        UserEntity user = _userRepository.findByIdentifier(responsiblePesonIdentifier).orElseThrow();
+        if(filter == null || filter.equals(""))
+        {
+            return WorkEntitiesToDisplay(_workRepository.findByUpdatedBy(user).orElse(new ArrayList<>()));
+        }
+        return WorkEntitiesToDisplay(_workRepository.findByUpdatedByAndSearchString(user,filter));
+    }
+
     @Transactional
     public void DeleteWork(String workIdentifier)
     {
-        _workRepository.delete(_workRepository.findByIdentifier(workIdentifier).orElseThrow());
+        WorkEntity work = _workRepository.findByIdentifier(workIdentifier).orElseThrow();
+        work.getVehicle().getWorks().remove(work);
+        _vehicleRepository.save(work.getVehicle());
     }
 
     // == private methods
@@ -68,6 +102,20 @@ public class WorkService
                 .identifier(UUID.randomUUID().toString())
                 .responsiblePerson(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier(w.getResponsiblePerson()).orElse(
                         _userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier("defaultUser").orElseThrow()))
+                .description(w.getDescription())
+                .priority(w.getPriority())
+                .build()).collect(Collectors.toList());
+    }
+
+    private WorkDisplay WorkEntityToDisplay(WorkEntity entity)
+    {
+        return WorkEntitiesToDisplay(List.of(entity)).stream().findFirst().orElseThrow();
+    }
+    private List<WorkDisplay> WorkEntitiesToDisplay(List<WorkEntity> entities)
+    {
+        return entities.stream().map(w -> WorkDisplay.builder()
+                .identifier(w.getIdentifier())
+                .responsiblePerson(w.getResponsiblePerson().getName())
                 .description(w.getDescription())
                 .priority(w.getPriority())
                 .build()).collect(Collectors.toList());

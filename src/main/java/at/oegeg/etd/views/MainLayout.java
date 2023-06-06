@@ -30,6 +30,10 @@ import com.vaadin.flow.theme.lumo.LumoUtility.Whitespace;
 import com.vaadin.flow.theme.lumo.LumoUtility.Width;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
+import java.util.Objects;
+
+import static at.oegeg.etd.Security.SecurityService.GetAuthorities;
+
 /**
  * The main view is a top-level placeholder for other views.
  */
@@ -102,14 +106,25 @@ public class MainLayout extends AppLayout {
         return header;
     }
 
-    private MenuItemInfo[] createMenuItems() {
-        return new MenuItemInfo[]{ //
-                new MenuItemInfo("Vehicles", LineAwesomeIcon.GLOBE_SOLID.create(), VehiclesView.class), //
+    private MenuItemInfo[] createMenuItems()
+    {
+        if(Objects.requireNonNull(GetAuthorities()).contains("ROLE_ADMIN") ||
+                Objects.requireNonNull(GetAuthorities()).contains("ROLE_LEADER"))
+        {
+            return new MenuItemInfo[]{ //
+                    new MenuItemInfo("Vehicles", LineAwesomeIcon.GLOBE_SOLID.create(), VehiclesView.class), //
 
-                //new MenuItemInfo("About", LineAwesomeIcon.FILE.create(), AboutView.class), //
+                    new MenuItemInfo("Users", LineAwesomeIcon.FILE.create(), UserView.class), //
 
 
-        };
+            };
+        }
+        else
+        {
+            return new MenuItemInfo[]{ //
+                    new MenuItemInfo("Vehicles", LineAwesomeIcon.GLOBE_SOLID.create(), VehiclesView.class), //
+            };
+        }
     }
 
 }

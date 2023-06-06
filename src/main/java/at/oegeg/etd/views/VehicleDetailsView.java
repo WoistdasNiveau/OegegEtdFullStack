@@ -5,6 +5,7 @@ import at.oegeg.etd.DataTransferObjects.DisplayModels.WorkDisplay;
 import at.oegeg.etd.DataTransferObjects.Services.Implementations.VehicleService;
 import at.oegeg.etd.DataTransferObjects.Services.Implementations.WorkService;
 import at.oegeg.etd.Entities.Enums.Priorities;
+import at.oegeg.etd.Entities.Enums.Role;
 import at.oegeg.etd.Repositories.IUserEntityRepository;
 import at.oegeg.etd.views.Forms.VehicleForm;
 import at.oegeg.etd.views.Forms.WorkForm;
@@ -25,9 +26,15 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
+
+import static at.oegeg.etd.Security.SecurityService.GetAuthorities;
+import static at.oegeg.etd.views.CustomRenderer.CreatePrioritiesRenderer;
 
 @PageTitle("Details | OegegEtd")
 @Route(value = "vehicle", layout = MainLayout.class)
@@ -57,6 +64,11 @@ public class VehicleDetailsView extends VerticalLayout implements HasUrlParamete
 
         workForm = new WorkForm(userEntityRepository);
         ConfigureVehicleForm();
+
+        addWorkButton.setEnabled(Objects.requireNonNull(GetAuthorities()).contains("ROLE_ADMIN") ||
+                Objects.requireNonNull(GetAuthorities()).contains("ROLE_LEADER"));
+        addWorkButton.setVisible(Objects.requireNonNull(GetAuthorities()).contains("ROLE_ADMIN") ||
+                Objects.requireNonNull(GetAuthorities()).contains("ROLE_LEADER"));
     }
 
     // == public methods ==
@@ -118,7 +130,8 @@ public class VehicleDetailsView extends VerticalLayout implements HasUrlParamete
         vehicleGrid.addColumn(VehicleDisplay::getWorkCount).setHeader("Works").setTextAlign(ColumnTextAlign.CENTER);
 
         vehicleGrid.getColumns().forEach(col -> col.setAutoWidth(true));
-        vehicleGrid.asSingleSelect().addValueChangeListener(t -> EditVehicle(t.getValue()));
+        if(Objects.requireNonNull(GetAuthorities()).contains("ROLE_ADMIN") || Objects.requireNonNull(GetAuthorities()).contains("ROLE_LEADER"))
+            vehicleGrid.asSingleSelect().addValueChangeListener(t -> EditVehicle(t.getValue()));
 
         vehicleGrid.setItems(vehicleDisplay);
     }
@@ -135,7 +148,9 @@ public class VehicleDetailsView extends VerticalLayout implements HasUrlParamete
         workGrid.addColumn(CreatePrioritiesRenderer()).setHeader("Priority").setSortable(true).setTextAlign(ColumnTextAlign.CENTER)
                 .setComparator(Comparator.comparingInt(p -> p.getPriority().ordinal()));
 
-        workGrid.asSingleSelect().addValueChangeListener(e -> EditWork(e.getValue()));
+
+        if(Objects.requireNonNull(GetAuthorities()).contains("ROLE_ADMIN") || Objects.requireNonNull(GetAuthorities()).contains("ROLE_LEADER"))
+            workGrid.asSingleSelect().addValueChangeListener(e -> EditWork(e.getValue()));
         workGrid.setItems(workDisplay);
     }
 
@@ -186,14 +201,14 @@ public class VehicleDetailsView extends VerticalLayout implements HasUrlParamete
     {
         _workService.DeleteWork(event.getWorkDisplay().getIdentifier());
         ReloadVehicle();
-        CloseEditor();
+        CloseWorkEditor();
     }
 
     private void UpdateWork(WorkForm.SaveEvent event)
     {
         _workService.SaveWork(event.getWorkDisplay(), vehicleDisplay.getIdentifier());
         ReloadVehicle();
-        CloseEditor();
+        CloseWorkEditor();
     }
 
     private void DeleteVehicle(VehicleForm.DeleteEvent event)
@@ -237,45 +252,45 @@ public class VehicleDetailsView extends VerticalLayout implements HasUrlParamete
         workGrid.setItems(workDisplay);
     }
 
-    private static ComponentRenderer<Span, WorkDisplay> CreatePrioritiesRenderer()
-    {
-        return new ComponentRenderer<>(workDisplay ->
-        {
-            Span priorityNone = new Span(Priorities.NONE.name());
-            priorityNone.getElement().getThemeList().add("badge contrast");
-            Span result = priorityNone;
-            switch (workDisplay.getPriority())
-            {
-                case NONE ->
-                {
-                    break;
-                }
-                case LOW ->
-                {
-                    Span priorityLow = new Span(Priorities.LOW.name());
-                    priorityLow.getElement().getThemeList().add("badge success primary");
-                    result = priorityLow;
-                }
-                case MEDIUM ->
-                {
-                    Span priorityMedium = new Span(Priorities.MEDIUM.name());
-                    priorityMedium.getElement().getThemeList().add("badge pill primary");
-                    result = priorityMedium;
-                }
-                case HIGH ->
-                {
-                    Span priorityHigh = new Span(Priorities.HIGH.name());
-                    priorityHigh.getElement().getThemeList().add("badge error primary");
-                    result = priorityHigh;
-                }
-                case DONE ->
-                {
-                    Span priorityDone = new Span(Priorities.DONE.name());
-                    priorityDone.getElement().getThemeList().add("badge contrast primary");
-                    result = priorityDone;
-                }
-            }
-            return result;
-        });
-    }
+    //private static ComponentRenderer<Span, WorkDisplay> CreatePrioritiesRenderer()
+    //{
+    //    return new ComponentRenderer<>(workDisplay ->
+    //    {
+    //        Span priorityNone = new Span(Priorities.NONE.name());
+    //        priorityNone.getElement().getThemeList().add("badge pill contrast");
+    //        Span result = priorityNone;
+    //        switch (workDisplay.getPriority())
+    //        {
+    //            case NONE ->
+    //            {
+    //                break;
+    //            }
+    //            case LOW ->
+    //            {
+    //                Span priorityLow = new Span(Priorities.LOW.name());
+    //                priorityLow.getElement().getThemeList().add("badge success pill primary");
+    //                result = priorityLow;
+    //            }
+    //            case MEDIUM ->
+    //            {
+    //                Span priorityMedium = new Span(Priorities.MEDIUM.name());
+    //                priorityMedium.getElement().getThemeList().add("badge pill primary");
+    //                result = priorityMedium;
+    //            }
+    //            case HIGH ->
+    //            {
+    //                Span priorityHigh = new Span(Priorities.HIGH.name());
+    //                priorityHigh.getElement().getThemeList().add("badge error pill primary");
+    //                result = priorityHigh;
+    //            }
+    //            case DONE ->
+    //            {
+    //                Span priorityDone = new Span(Priorities.DONE.name());
+    //                priorityDone.getElement().getThemeList().add("badge contrast pill primary");
+    //                result = priorityDone;
+    //            }
+    //        }
+    //        return result;
+    //    });
+    //}
 }

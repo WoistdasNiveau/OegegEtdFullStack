@@ -40,23 +40,23 @@ public class UserEntity implements UserDetails
     private boolean IsUserEnabled = false;
     private Role role;
 
-    @OneToMany(mappedBy = "createdBy")
+    @OneToMany(mappedBy = "createdBy", fetch = FetchType.EAGER)
     @Cascade(CascadeType.ALL)
     private List<VehicleEntity> createdVehicles;
 
-    @OneToMany(mappedBy = "createdBy")
+    @OneToMany(mappedBy = "createdBy", fetch = FetchType.EAGER)
     @Cascade(CascadeType.SAVE_UPDATE)
     private List<WorkEntity> createdWorks;
 
-    @OneToMany(mappedBy = "responsiblePerson")
+    @OneToMany(mappedBy = "responsiblePerson", fetch = FetchType.EAGER)
     @Cascade(CascadeType.SAVE_UPDATE)
     private List<WorkEntity> responsibleFor;
 
-    @OneToMany(mappedBy = "updatedBy")
+    @OneToMany(mappedBy = "updatedBy", fetch = FetchType.EAGER)
     @Cascade(CascadeType.SAVE_UPDATE)
     private List<VehicleEntity> updatedVehicles;
 
-    @OneToMany(mappedBy = "updatedBy")
+    @OneToMany(mappedBy = "updatedBy", fetch = FetchType.EAGER)
     @Cascade(CascadeType.SAVE_UPDATE)
     private List<WorkEntity> updatedWorks;
 

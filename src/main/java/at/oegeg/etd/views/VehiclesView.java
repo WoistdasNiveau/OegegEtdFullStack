@@ -21,6 +21,10 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import jakarta.annotation.security.RolesAllowed;
 
+import java.util.Objects;
+
+import static at.oegeg.etd.Security.SecurityService.GetAuthorities;
+
 
 @PageTitle("Vehicles | OegegEtd")
 @Route(value = "vehicles", layout = MainLayout.class)
@@ -32,6 +36,7 @@ public class VehiclesView extends VerticalLayout
     Grid<VehicleDisplay> vehicleGrid = new Grid<>(VehicleDisplay.class,false);
     TextField filterText = new TextField();
     VehicleForm vehicleForm;
+    Button addVehicleButton;
 
     // == private fields ==
     private final VehicleService _vehicleService;
@@ -41,6 +46,13 @@ public class VehiclesView extends VerticalLayout
         _vehicleService = vehicleService;
         addClassName("list-view");
         setSizeFull();
+
+        addVehicleButton = new Button("Add Vehicle");
+
+        addVehicleButton.setEnabled(Objects.requireNonNull(GetAuthorities()).contains("ROLE_ADMIN") ||
+                Objects.requireNonNull(GetAuthorities()).contains("ROLE_LEADER"));
+        addVehicleButton.setVisible(Objects.requireNonNull(GetAuthorities()).contains("ROLE_ADMIN") ||
+                Objects.requireNonNull(GetAuthorities()).contains("ROLE_LEADER"));
 
         configureGrid();
         configureVehicleForm();
@@ -107,7 +119,7 @@ public class VehiclesView extends VerticalLayout
         filterText.setValueChangeMode(ValueChangeMode.LAZY);
         filterText.addValueChangeListener(e -> UpdateVehicleList());
 
-        Button addVehicleButton = new Button("Add Vehicle");
+        //Button addVehicleButton = new Button("Add Vehicle");
         addVehicleButton.addClickListener(e -> AddVehicle());
 
         HorizontalLayout toolbar = new HorizontalLayout(filterText,addVehicleButton);
@@ -133,8 +145,9 @@ public class VehiclesView extends VerticalLayout
         vehicleGrid.addColumn(VehicleDisplay::getNumber).setHeader("Number").setSortable(true).setTextAlign(ColumnTextAlign.CENTER);
         vehicleGrid.addColumn(VehicleDisplay::getStatus).setHeader("Status").setSortable(true).setTextAlign(ColumnTextAlign.CENTER);
         vehicleGrid.addColumn(VehicleDisplay::getStand).setHeader("Stand").setSortable(true).setTextAlign(ColumnTextAlign.CENTER);
-        vehicleGrid.addColumn(WorksColumnRenderer()).setHeader("Works").setSortable(true).setTextAlign(ColumnTextAlign.CENTER);
+        vehicleGrid.addColumn(VehicleDisplay::getWorkCount).setHeader("Works").setSortable(true).setTextAlign(ColumnTextAlign.CENTER);
 
+        vehicleGrid.asSingleSelect().addValueChangeListener(t -> GoToDetailsPage(t.getValue()));
         vehicleGrid.getColumns().forEach(col -> col.setAutoWidth(true));
 
     }
@@ -151,16 +164,21 @@ public class VehiclesView extends VerticalLayout
         addClassName("editing");
     }
 
-    private ComponentRenderer<Button, VehicleDisplay> WorksColumnRenderer()
+    private void GoToDetailsPage(VehicleDisplay display)
     {
-        return new ComponentRenderer<Button, VehicleDisplay>(t ->
-        {
-            Button worksButton = new Button(String.valueOf(t.getWorkCount()));
-            worksButton.getElement().setProperty("Vehicle",t.getIdentifier());
-            worksButton.addClickListener(this::WorksColumnClickListener);
-            return worksButton;
-        });
+        UI.getCurrent().getPage().setLocation("vehicle/" + display.getIdentifier());
     }
+
+    //private ComponentRenderer<Button, VehicleDisplay> WorksColumnRenderer()
+    //{
+    //    return new ComponentRenderer<Button, VehicleDisplay>(t ->
+    //    {
+    //        Button worksButton = new Button(String.valueOf(t.getWorkCount()));
+    //        worksButton.getElement().setProperty("Vehicle",t.getIdentifier());
+    //        worksButton.addClickListener(this::WorksColumnClickListener);
+    //        return worksButton;
+    //    });
+    //}
     private void WorksColumnClickListener(ClickEvent<Button> buttonClickEvent)
     {
         UI.getCurrent().getPage().setLocation("vehicle/" + buttonClickEvent.getSource().getElement().getProperty("Vehicle"));

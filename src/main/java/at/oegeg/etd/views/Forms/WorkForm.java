@@ -118,7 +118,7 @@ public class WorkForm extends FormLayout
         return new ComponentRenderer<>(priorities ->
         {
             Span priorityNone = new Span(Priorities.NONE.name());
-            priorityNone.getElement().getThemeList().add("badge contrast primary");
+            priorityNone.getElement().getThemeList().add("badge contrast");
             Span result = priorityNone;
             switch (priorities)
             {
