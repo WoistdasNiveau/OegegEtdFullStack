@@ -6,6 +6,7 @@ import at.oegeg.etd.DataTransferObjects.Services.Implementations.VehicleService;
 import at.oegeg.etd.DataTransferObjects.Services.Implementations.WorkService;
 import at.oegeg.etd.Entities.Enums.Priorities;
 import at.oegeg.etd.Entities.Enums.Role;
+import at.oegeg.etd.Entities.VehicleEntity;
 import at.oegeg.etd.Repositories.IUserEntityRepository;
 import at.oegeg.etd.views.Forms.VehicleForm;
 import at.oegeg.etd.views.Forms.WorkForm;
@@ -15,20 +16,25 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.StreamResource;
 import jakarta.annotation.security.RolesAllowed;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.io.ByteArrayInputStream;
+import java.util.Base64;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -42,19 +48,19 @@ import static at.oegeg.etd.views.CustomRenderer.CreatePrioritiesRenderer;
 public class VehicleDetailsView extends VerticalLayout implements HasUrlParameter<String>
 {
     // == private fields ==
-    private VehicleDisplay vehicleDisplay;
-    private List<WorkDisplay> workDisplay;
     private final VehicleService _vehicleService;
     private final WorkService _workService;
     private String identifier;
 
     // == view fields ==
-    private WorkForm workForm;
-    private Grid<VehicleDisplay> vehicleGrid = new Grid<>(VehicleDisplay.class, false);
-    private Grid<WorkDisplay> workGrid = new Grid<>(WorkDisplay.class, false);
+    WorkForm workForm;
+    Grid<VehicleDisplay> vehicleGrid = new Grid<>(VehicleDisplay.class, false);
+    Grid<WorkDisplay> workGrid = new Grid<>(WorkDisplay.class, false);
+    VehicleForm vehicleForm;
+    Button addWorkButton = new Button();
+    Button downloadPdfButton = new Button("Download Pdf");
+    Anchor a;
 
-    private VehicleForm vehicleForm;
-    private Button addWorkButton = new Button();
 
     // == constructor ==
     public VehicleDetailsView(VehicleService vehicleService, IUserEntityRepository userEntityRepository, WorkService workService)
@@ -77,17 +83,24 @@ public class VehicleDetailsView extends VerticalLayout implements HasUrlParamete
     public void setParameter(BeforeEvent beforeEvent, String s)
     {
         identifier = s;
-
         try
         {
-            vehicleDisplay = _vehicleService.FindVehicleByIdentifier(identifier);
-            workDisplay = vehicleDisplay.getWorks();
+            ReloadGrids("");
+
+            VehicleDisplay vehicle = _vehicleService.FindVehicleByIdentifier(identifier);
+            byte[] pdf = _vehicleService.DownloadVehiclePdf(identifier);
+
+            StreamResource resource = new StreamResource(vehicle.getNumber() + ".pdf", () -> new ByteArrayInputStream(pdf));
+
+            a = new Anchor(resource, "Open pdf");
+            a.getElement().setAttribute("target", "_blank");
         }
         catch (Exception ex)
         {
-            UI.getCurrent().getPage().setLocation("/");
+            UI.getCurrent().getPage().setLocation("/vehicles");
         }
 
+        ConfigurePdfButton();
         ConfigureVehicleGrid();
         ConfigureWorksGrid();
         ConfigureVehicleForm();
@@ -95,7 +108,7 @@ public class VehicleDetailsView extends VerticalLayout implements HasUrlParamete
 
         addWorkButton.setText("Add Work");
         addWorkButton.addClickListener(e -> AddWork());
-        HorizontalLayout toolbar = new HorizontalLayout(new H1("Works"),addWorkButton);
+        HorizontalLayout toolbar = new HorizontalLayout(new H1("Works"),addWorkButton, a);
         toolbar.setDefaultVerticalComponentAlignment(Alignment.CENTER);
 
         VerticalLayout content1 = new VerticalLayout(new H1("Vehicle"), vehicleGrid,toolbar, workGrid);
@@ -116,6 +129,28 @@ public class VehicleDetailsView extends VerticalLayout implements HasUrlParamete
     }
 
     // == private methods ==
+    private void ConfigurePdfButton()
+    {
+        downloadPdfButton.addClickListener(t -> DownloadVehiclePdf());
+    }
+
+    private void DownloadVehiclePdf()
+    {
+        try
+        {
+            VehicleDisplay vehicle = _vehicleService.FindVehicleByIdentifier(identifier);
+            byte[] pdf = _vehicleService.DownloadVehiclePdf(identifier);
+
+            StreamResource resource = new StreamResource(vehicle.getNumber() + ".pdf", () -> new ByteArrayInputStream(pdf));
+
+            Anchor a = new Anchor(resource, "Open pdf");
+            a.getElement().setAttribute("target", "_blank");
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+        }
+    }
 
     private void ConfigureVehicleGrid()
     {
@@ -132,8 +167,6 @@ public class VehicleDetailsView extends VerticalLayout implements HasUrlParamete
         vehicleGrid.getColumns().forEach(col -> col.setAutoWidth(true));
         if(Objects.requireNonNull(GetAuthorities()).contains("ROLE_ADMIN") || Objects.requireNonNull(GetAuthorities()).contains("ROLE_LEADER"))
             vehicleGrid.asSingleSelect().addValueChangeListener(t -> EditVehicle(t.getValue()));
-
-        vehicleGrid.setItems(vehicleDisplay);
     }
 
     private void ConfigureWorksGrid()
@@ -151,7 +184,12 @@ public class VehicleDetailsView extends VerticalLayout implements HasUrlParamete
 
         if(Objects.requireNonNull(GetAuthorities()).contains("ROLE_ADMIN") || Objects.requireNonNull(GetAuthorities()).contains("ROLE_LEADER"))
             workGrid.asSingleSelect().addValueChangeListener(e -> EditWork(e.getValue()));
-        workGrid.setItems(workDisplay);
+    }
+
+    private void ReloadGrids(String filter)
+    {
+        vehicleGrid.setItems(_vehicleService.FindVehicleByIdentifier(identifier));
+        workGrid.setItems(_workService.FindAllByVehicle(identifier, filter));
     }
 
     private void ConfigureVehicleForm()
@@ -195,19 +233,21 @@ public class VehicleDetailsView extends VerticalLayout implements HasUrlParamete
         workForm.SetSelectedWork(null);
         workForm.setVisible(false);
         removeClassName("editing");
+        ReloadGrids("");
     }
 
     private void DeleteWork(WorkForm.DeleteEvent event)
     {
         _workService.DeleteWork(event.getWorkDisplay().getIdentifier());
-        ReloadVehicle();
+        ReloadGrids("");
         CloseWorkEditor();
+        ReloadGrids("");
     }
 
     private void UpdateWork(WorkForm.SaveEvent event)
     {
-        _workService.SaveWork(event.getWorkDisplay(), vehicleDisplay.getIdentifier());
-        ReloadVehicle();
+        _workService.SaveWork(event.getWorkDisplay(), identifier);
+        ReloadGrids("");
         CloseWorkEditor();
     }
 
@@ -220,7 +260,7 @@ public class VehicleDetailsView extends VerticalLayout implements HasUrlParamete
     private void UpdateVehicle(VehicleForm.SaveEvent event)
     {
         _vehicleService.UpdateVehicle(event.getVehicle());
-        ReloadVehicle();
+        ReloadGrids("");
         CloseEditor();
     }
 
@@ -243,54 +283,4 @@ public class VehicleDetailsView extends VerticalLayout implements HasUrlParamete
         vehicleForm.setVisible(true);
         addClassName("editing");
     }
-
-    private void ReloadVehicle()
-    {
-        vehicleDisplay = _vehicleService.FindVehicleByIdentifier(identifier);
-        workDisplay = vehicleDisplay.getWorks();
-        vehicleGrid.setItems(vehicleDisplay);
-        workGrid.setItems(workDisplay);
-    }
-
-    //private static ComponentRenderer<Span, WorkDisplay> CreatePrioritiesRenderer()
-    //{
-    //    return new ComponentRenderer<>(workDisplay ->
-    //    {
-    //        Span priorityNone = new Span(Priorities.NONE.name());
-    //        priorityNone.getElement().getThemeList().add("badge pill contrast");
-    //        Span result = priorityNone;
-    //        switch (workDisplay.getPriority())
-    //        {
-    //            case NONE ->
-    //            {
-    //                break;
-    //            }
-    //            case LOW ->
-    //            {
-    //                Span priorityLow = new Span(Priorities.LOW.name());
-    //                priorityLow.getElement().getThemeList().add("badge success pill primary");
-    //                result = priorityLow;
-    //            }
-    //            case MEDIUM ->
-    //            {
-    //                Span priorityMedium = new Span(Priorities.MEDIUM.name());
-    //                priorityMedium.getElement().getThemeList().add("badge pill primary");
-    //                result = priorityMedium;
-    //            }
-    //            case HIGH ->
-    //            {
-    //                Span priorityHigh = new Span(Priorities.HIGH.name());
-    //                priorityHigh.getElement().getThemeList().add("badge error pill primary");
-    //                result = priorityHigh;
-    //            }
-    //            case DONE ->
-    //            {
-    //                Span priorityDone = new Span(Priorities.DONE.name());
-    //                priorityDone.getElement().getThemeList().add("badge contrast pill primary");
-    //                result = priorityDone;
-    //            }
-    //        }
-    //        return result;
-    //    });
-    //}
 }

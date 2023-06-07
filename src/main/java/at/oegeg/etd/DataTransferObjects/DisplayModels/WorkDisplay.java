@@ -13,6 +13,8 @@ import lombok.NoArgsConstructor;
 public class WorkDisplay
 {
     private String identifier;
+    private String vehicle;
+    private String vehicleIdentifier;
     private String responsiblePerson;
     private String description;
     private Priorities priority;

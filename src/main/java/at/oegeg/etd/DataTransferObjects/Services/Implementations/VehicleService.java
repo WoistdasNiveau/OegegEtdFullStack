@@ -13,10 +13,14 @@ import at.oegeg.etd.Entities.WorkEntity;
 import at.oegeg.etd.Repositories.IUserEntityRepository;
 import at.oegeg.etd.Repositories.IVehicleRepository;
 import at.oegeg.etd.Repositories.IWorkRepository;
+import com.itextpdf.text.DocumentException;
+import com.vaadin.flow.server.StreamResource;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -30,6 +34,7 @@ public class VehicleService
     private final IVehicleRepository _vehicleRepository;
     private final IUserEntityRepository _userRepository;
     private final IWorkRepository _workRepository;
+    private final PdfService _pdfService;
 
     // == public methods ==
     public List<VehicleDisplay> FindAllVehicles(String filterText)
@@ -67,6 +72,12 @@ public class VehicleService
         return VehicleEntitiesToVehicleDisplay(_vehicleRepository.findBySearchStringAndUpdatedBy(filter, user));
     }
 
+    public byte[] DownloadVehiclePdf(String identifier) throws DocumentException, IOException
+    {
+        VehicleEntity entity = _vehicleRepository.findByIdentifier(identifier).orElseThrow();
+        return _pdfService.GenerateVehiclePdf(entity);
+    }
+
     public long VehiclesCount()
     {
         return _vehicleRepository.count();
@@ -78,24 +89,13 @@ public class VehicleService
         _vehicleRepository.delete(vehicle);
     }
 
-    public void SaveVehicle(VehicleDisplay vehicleRequest)//, String token)
+    public void SaveVehicle(VehicleDisplay vehicleDisplay)
     {
-        //UserEntity user = _userRepository.findByIdentifier(_jwtService.ExtractUsername(token)).orElseThrow();
-        VehicleEntity entity;
-        entity = VehicleEntity.builder()
-                .identifier(UUID.randomUUID().toString())
-                .number(vehicleRequest.getNumber())
-                .type(vehicleRequest.getType())
-                .status(vehicleRequest.getStatus())
-                .stand(vehicleRequest.getStand())
-                .priority(Priorities.NONE)
-                //.createdBy(user)
-                .build();
-        if(vehicleRequest.getWorks()!= null && vehicleRequest.getWorks().stream().count() > 0)
+        VehicleEntity entity = VehicleDisplayToEntity(vehicleDisplay);
+        if(vehicleDisplay.getWorks()!= null && vehicleDisplay.getWorks().stream().count() > 0)
         {
-            List<WorkEntity> works = WorkDisplayToWorkEntity(vehicleRequest.getWorks());
+            List<WorkEntity> works = WorkDisplayToWorkEntity(vehicleDisplay.getWorks());
             works.forEach(t -> t.setVehicle(entity));
-            //works.forEach(t -> t.setCreatedBy(user));
             entity.setWorks(works);
         }
         _vehicleRepository.save(entity);
@@ -108,23 +108,32 @@ public class VehicleService
         entity.setType(display.getType());
         entity.setStatus(display.getStatus());
         entity.setStand(display.getStand());
+        entity.setUpdatedBy(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow());
         _vehicleRepository.save(entity);
     }
 
     // == private methods ==
+    private VehicleEntity VehicleDisplayToEntity(VehicleDisplay display)
+    {
+        return VehicleDisplaysToEntities(List.of(display)).stream().findFirst().orElseThrow();
+    }
+
+    private List<VehicleEntity> VehicleDisplaysToEntities(List<VehicleDisplay> displays)
+    {
+        return displays.stream().map(t -> VehicleEntity.builder()
+                .identifier(UUID.randomUUID().toString())
+                .number(t.getNumber())
+                .type(t.getType())
+                .status(t.getStatus())
+                .stand(t.getStand())
+                .createdBy(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow())
+                .build())
+                .collect(Collectors.toList());
+    }
 
     private VehicleDisplay VehicleEntityToDisplay(VehicleEntity entity)
     {
-        return VehicleDisplay.builder()
-                .identifier(entity.getIdentifier())
-                .number(entity.getNumber())
-                .type(entity.getType())
-                .status(entity.getStatus())
-                .stand(entity.getStand())
-                .priority(entity.getPriority())
-                .workCount(entity.getWorkCount())
-                .works(WorkEntityToWorkDisplay(entity.getWorks()))
-                .build();
+        return VehicleEntitiesToVehicleDisplay(List.of(entity)).stream().findFirst().orElseThrow();
     }
     private List<VehicleDisplay> VehicleEntitiesToVehicleDisplay(List<VehicleEntity> entities)
     {
@@ -139,28 +148,6 @@ public class VehicleService
                 .collect(Collectors.toList());
     }
 
-    private VehicleResponse VehicleEntityToVehicleResponse(VehicleEntity entity)
-    {
-        List<VehicleEntity> v = new ArrayList<>();
-        v.add(entity);
-        return (VehicleResponse)((List)VehicleEntitiesToVehicleDisplay(v)).stream().findFirst().orElseThrow();
-    }
-    private List<WorkEntity> WorkRequestToWorkEntity(List<WorkRequest> requests)
-    {
-        List<WorkEntity> works = new ArrayList<WorkEntity>();
-        for(WorkRequest request : requests)
-        {
-            UserEntity user = _userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier(request.getResponsiblePersonEmailOrTelephoneNumber()).orElse(null);
-            works.add(WorkEntity.builder()
-                    .responsiblePerson(user)
-                    .description(request.getDescription())
-                    .priority(request.getPriority())
-                    .identifier(UUID.randomUUID().toString())
-                    .build());
-        }
-        return works;
-    }
-
     private List<WorkEntity> WorkDisplayToWorkEntity(List<WorkDisplay> requests)
     {
         List<WorkEntity> works = new ArrayList<WorkEntity>();
@@ -172,51 +159,10 @@ public class VehicleService
                     .description(request.getDescription())
                     .priority(request.getPriority())
                     .identifier(UUID.randomUUID().toString())
+                    .createdBy(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow())
                     .build());
         }
         return works;
     }
 
-    private List<WorkDisplay> WorkEntityToWorkDisplay(List<WorkEntity> entities)
-    {
-        List<WorkDisplay> response = new ArrayList<>();
-        for(WorkEntity entity : entities)
-        {
-            WorkDisplay r = WorkDisplay.builder()
-                    .description(entity.getDescription())
-                    .priority(entity.getPriority())
-                    .identifier(entity.getIdentifier())
-                    .build();
-            if(entity.getResponsiblePerson() != null)
-                r.setResponsiblePerson(entity.getResponsiblePerson().getName());
-            response.add(r);
-        }
-        return response;
-    }
-
-    private List<WorkResponse> WorkEntityToWorkResponse(List<WorkEntity> entities)
-    {
-        List<WorkResponse> response = new ArrayList<>();
-        for(WorkEntity entity : entities)
-        {
-            WorkResponse r = WorkResponse.builder()
-                    .Description(entity.getDescription())
-                    .Priority(entity.getPriority())
-                    .identifier(entity.getIdentifier())
-                    .build();
-            if(entity.getResponsiblePerson() != null)
-                r.setResponsiblePerson(entity.getResponsiblePerson().getName());
-            response.add(r);
-        }
-        return response;
-    }
-
-    private UserResponse UserEntityToUserResponse(UserEntity user)
-    {
-        return UserResponse.builder()
-                .name(user.getName())
-                .email(user.getEmail())
-                .telephoneNumber(user.getTelephoneNumber())
-                .build();
-    }
 }

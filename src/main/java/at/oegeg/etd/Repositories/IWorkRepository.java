@@ -18,6 +18,8 @@ public interface IWorkRepository extends JpaRepository<WorkEntity, Long>
     Optional<List<WorkEntity>> findByCreatedBy(UserEntity user);
     Optional<List<WorkEntity>> findByUpdatedBy(UserEntity user);
 
+    Optional<List<WorkEntity>> findByVehicle(VehicleEntity vehicle);
+
     @Query("SELECT e FROM WorkEntity e " +
             "WHERE e.createdBy = :createdBy " +
             "AND (LOWER(e.identifier) LIKE LOWER(concat('%', :searchString, '%')) OR " +
@@ -35,6 +37,12 @@ public interface IWorkRepository extends JpaRepository<WorkEntity, Long>
             "AND (LOWER(e.identifier) LIKE LOWER(concat('%', :searchString, '%')) OR " +
             "LOWER(e.description) LIKE LOWER(concat('%', :searchString, '%')))")
     List<WorkEntity> findByResponsiblePersonAndSearchString(UserEntity createdBy, String searchString);
+
+    @Query("SELECT e FROM WorkEntity e " +
+            "WHERE e.vehicle.identifier = :vehicleIdentifier " +
+            "AND (LOWER(e.identifier) LIKE LOWER(concat('%', :searchString, '%')) OR " +
+            "LOWER(e.description) LIKE LOWER(concat('%', :searchString, '%')))")
+    List<WorkEntity> findByVehicleAndSearchString(String vehicleIdentifier, String searchString);
 
 
 

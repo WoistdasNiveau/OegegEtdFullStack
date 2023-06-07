@@ -70,6 +70,12 @@ public class UserService
         return _userRepository.existsByIdentifier(identifier);
     }
 
+    public void DeleteUser(String identifier)
+    {
+        UserEntity user = _userRepository.findByIdentifier(identifier).orElseThrow();
+        _userRepository.delete(user);
+    }
+
     public void SetInitialPassword(String identifier, String password)
     {
         UserEntity user = _userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier(identifier).orElseThrow();

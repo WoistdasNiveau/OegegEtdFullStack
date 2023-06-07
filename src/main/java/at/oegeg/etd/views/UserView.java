@@ -132,6 +132,7 @@ public class UserView extends VerticalLayout
     {
         userForm = new UserForm(_userService);
         userForm.setWidth("25em");
+        userForm.deleteButton.setVisible(false);
 
         userForm.AddListener(UserForm.SaveEvent.class, this::CreateUser);
         userForm.AddListener(UserForm.CloseEvent.class, t -> CloseUserForm());
@@ -157,7 +158,7 @@ public class UserView extends VerticalLayout
             return;
         }
         userForm.SetSelectedUser(userDisplay);
-        userForm.deleteButton.setVisible(userDisplay.getIdentifier() != null && !userDisplay.getIdentifier().isEmpty());
+        //userForm.deleteButton.setVisible(userDisplay.getIdentifier() != null && !userDisplay.getIdentifier().isEmpty());
         userForm.setVisible(true);
         addClassName("editing");
     }

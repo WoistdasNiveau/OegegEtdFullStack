@@ -34,7 +34,7 @@ public class WorkService
         {
             WorkEntity entity = WorkDisplayToEntity(workDisplay);
             entity.setVehicle(_vehicleRepository.findByIdentifier(vehicleIdentifier).orElseThrow());
-            entity.setUpdatedBy(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier(SecurityContextHolder.getContext().getAuthentication().getName()
+            entity.setCreatedBy(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier(SecurityContextHolder.getContext().getAuthentication().getName()
                     .toString()).orElseThrow());
             _workRepository.save(entity);
         }
@@ -45,11 +45,20 @@ public class WorkService
                     _userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier("defaultUser").orElseThrow()
             ));
             workEntity.setPriority(workDisplay.getPriority());
-            workEntity.setCreatedBy(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier(SecurityContextHolder.getContext().getAuthentication().getName())
+            workEntity.setUpdatedBy(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier(SecurityContextHolder.getContext().getAuthentication().getName())
                     .orElseThrow());
             workEntity.setDescription(workDisplay.getDescription());
             _workRepository.save(workEntity);
         }
+    }
+
+    public List<WorkDisplay> FindAllByVehicle(String vehicleIdentifier, String filter)
+    {
+        if(filter == null || filter.equals(""))
+        {
+            return WorkEntitiesToDisplay(_workRepository.findByVehicle(_vehicleRepository.findByIdentifier(vehicleIdentifier).orElseThrow()).orElseThrow());
+        }
+        return WorkEntitiesToDisplay(_workRepository.findByVehicleAndSearchString(vehicleIdentifier, filter));
     }
 
     public List<WorkDisplay> FindAllByResponsiblePerson(String responsiblePesonIdentifier, String filter)
@@ -115,6 +124,8 @@ public class WorkService
     {
         return entities.stream().map(w -> WorkDisplay.builder()
                 .identifier(w.getIdentifier())
+                .vehicle(w.getVehicle().getNumber())
+                .vehicleIdentifier(w.getVehicle().getIdentifier())
                 .responsiblePerson(w.getResponsiblePerson().getName())
                 .description(w.getDescription())
                 .priority(w.getPriority())
