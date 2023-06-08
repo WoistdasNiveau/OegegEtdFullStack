@@ -1,7 +1,7 @@
 package at.oegeg.etd.views.Forms;
 
 import at.oegeg.etd.DataTransferObjects.DisplayModels.UserDisplay;
-import at.oegeg.etd.DataTransferObjects.Services.Implementations.UserService;
+import at.oegeg.etd.Services.Implementations.UserService;
 import at.oegeg.etd.Entities.Enums.Role;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;

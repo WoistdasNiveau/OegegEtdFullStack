@@ -1,9 +1,8 @@
 package at.oegeg.etd.views;
 
 import at.oegeg.etd.DataTransferObjects.DisplayModels.VehicleDisplay;
-import at.oegeg.etd.DataTransferObjects.Services.Implementations.VehicleService;
+import at.oegeg.etd.Services.Implementations.VehicleService;
 import at.oegeg.etd.views.Forms.VehicleForm;
-import at.oegeg.etd.views.MainLayout;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -14,7 +13,6 @@ import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;

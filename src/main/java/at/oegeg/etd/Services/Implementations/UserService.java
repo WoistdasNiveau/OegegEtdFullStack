@@ -1,10 +1,9 @@
-package at.oegeg.etd.DataTransferObjects.Services.Implementations;
+package at.oegeg.etd.Services.Implementations;
 
 import at.oegeg.etd.DataTransferObjects.DisplayModels.UserDisplay;
 import at.oegeg.etd.Entities.Enums.Role;
 import at.oegeg.etd.Entities.UserEntity;
 import at.oegeg.etd.Repositories.IUserEntityRepository;
-import com.vaadin.flow.server.*;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;

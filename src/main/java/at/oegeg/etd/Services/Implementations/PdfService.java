@@ -1,4 +1,4 @@
-package at.oegeg.etd.DataTransferObjects.Services.Implementations;
+package at.oegeg.etd.Services.Implementations;
 
 import at.oegeg.etd.Entities.VehicleEntity;
 import at.oegeg.etd.Entities.WorkEntity;

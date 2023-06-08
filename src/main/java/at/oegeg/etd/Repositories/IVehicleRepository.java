@@ -2,6 +2,7 @@ package at.oegeg.etd.Repositories;
 
 import at.oegeg.etd.Entities.UserEntity;
 import at.oegeg.etd.Entities.VehicleEntity;
+import jakarta.persistence.PrePersist;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -39,5 +40,7 @@ public interface IVehicleRepository extends JpaRepository<VehicleEntity, Long>
             "LOWER(e.stand) LIKE LOWER(concat('%', :searchString, '%'))) AND " +
             "e.updatedBy = :createdBy")
     List<VehicleEntity> findBySearchStringAndUpdatedBy(String searchString, UserEntity createdBy);
+
+
 
 }

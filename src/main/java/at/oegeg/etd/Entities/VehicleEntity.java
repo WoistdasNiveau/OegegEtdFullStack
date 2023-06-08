@@ -9,6 +9,7 @@ import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.Formula;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -37,7 +38,7 @@ public class VehicleEntity
     private Priorities priority;
 
     @Transient
-    @Formula("(SELECT COUNT(we) FROM WorkEntity we WHERE we.vehicle.id = id)")
+    @Formula("(SELECT COUNT(*) FROM WorkEntity ce WHERE ce.vehicle.id = id)")
     private Long workCount;
 
     @OneToMany(mappedBy="vehicle", fetch = FetchType.EAGER, orphanRemoval = true)

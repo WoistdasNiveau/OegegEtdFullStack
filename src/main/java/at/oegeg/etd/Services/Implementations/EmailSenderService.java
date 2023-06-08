@@ -1,4 +1,4 @@
-package at.oegeg.etd.DataTransferObjects.Services.Implementations;
+package at.oegeg.etd.Services.Implementations;
 
 import at.oegeg.etd.DataTransferObjects.DisplayModels.UserDisplay;
 import at.oegeg.etd.Entities.UserEntity;

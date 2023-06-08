@@ -1,12 +1,7 @@
-package at.oegeg.etd.DataTransferObjects.Services.Implementations;
+package at.oegeg.etd.Services.Implementations;
 
 import at.oegeg.etd.DataTransferObjects.DisplayModels.VehicleDisplay;
 import at.oegeg.etd.DataTransferObjects.DisplayModels.WorkDisplay;
-import at.oegeg.etd.DataTransferObjects.Request.WorkRequest;
-import at.oegeg.etd.DataTransferObjects.Response.UserResponse;
-import at.oegeg.etd.DataTransferObjects.Response.VehicleResponse;
-import at.oegeg.etd.DataTransferObjects.Response.WorkResponse;
-import at.oegeg.etd.Entities.Enums.Priorities;
 import at.oegeg.etd.Entities.UserEntity;
 import at.oegeg.etd.Entities.VehicleEntity;
 import at.oegeg.etd.Entities.WorkEntity;
@@ -14,10 +9,8 @@ import at.oegeg.etd.Repositories.IUserEntityRepository;
 import at.oegeg.etd.Repositories.IVehicleRepository;
 import at.oegeg.etd.Repositories.IWorkRepository;
 import com.itextpdf.text.DocumentException;
-import com.vaadin.flow.server.StreamResource;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;

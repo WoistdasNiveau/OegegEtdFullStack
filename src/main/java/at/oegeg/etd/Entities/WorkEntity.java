@@ -50,4 +50,6 @@ public class WorkEntity
         WorkEntity entity = (WorkEntity) obj;
         return Objects.equals(identifier,entity.getIdentifier());
     }
+
+
 }

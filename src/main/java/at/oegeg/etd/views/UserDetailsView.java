@@ -3,13 +3,11 @@ package at.oegeg.etd.views;
 import at.oegeg.etd.DataTransferObjects.DisplayModels.UserDisplay;
 import at.oegeg.etd.DataTransferObjects.DisplayModels.VehicleDisplay;
 import at.oegeg.etd.DataTransferObjects.DisplayModels.WorkDisplay;
-import at.oegeg.etd.DataTransferObjects.Services.Implementations.EmailSenderService;
-import at.oegeg.etd.DataTransferObjects.Services.Implementations.UserService;
-import at.oegeg.etd.DataTransferObjects.Services.Implementations.VehicleService;
-import at.oegeg.etd.DataTransferObjects.Services.Implementations.WorkService;
-import at.oegeg.etd.Entities.UserEntity;
+import at.oegeg.etd.Services.Implementations.EmailSenderService;
+import at.oegeg.etd.Services.Implementations.UserService;
+import at.oegeg.etd.Services.Implementations.VehicleService;
+import at.oegeg.etd.Services.Implementations.WorkService;
 import at.oegeg.etd.views.Forms.UserForm;
-import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
@@ -26,7 +24,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Comparator;
 import java.util.Objects;
-import java.util.Set;
 
 import static at.oegeg.etd.Security.SecurityService.GetAuthorities;
 import static at.oegeg.etd.views.CustomRenderer.CreatePrioritiesRenderer;

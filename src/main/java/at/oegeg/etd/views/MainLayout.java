@@ -1,21 +1,12 @@
 package at.oegeg.etd.views;
 
 
-import at.oegeg.etd.DataTransferObjects.Services.Implementations.UserService;
+import at.oegeg.etd.Services.Implementations.UserService;
 import at.oegeg.etd.Security.SecurityService;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentUtil;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.*;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.router.RouteParameters;
-import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLink;
-import com.vaadin.flow.server.RouteRegistry;
-import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.theme.lumo.LumoUtility.AlignItems;
 import com.vaadin.flow.theme.lumo.LumoUtility.BoxSizing;
 import com.vaadin.flow.theme.lumo.LumoUtility.Display;

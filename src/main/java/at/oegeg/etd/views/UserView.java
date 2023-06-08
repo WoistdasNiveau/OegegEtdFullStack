@@ -1,7 +1,7 @@
 package at.oegeg.etd.views;
 
 import at.oegeg.etd.DataTransferObjects.DisplayModels.UserDisplay;
-import at.oegeg.etd.DataTransferObjects.Services.Implementations.UserService;
+import at.oegeg.etd.Services.Implementations.UserService;
 import at.oegeg.etd.views.Forms.UserForm;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -23,7 +23,6 @@ import java.util.Objects;
 
 import static at.oegeg.etd.Security.SecurityService.GetAuthorities;
 import static at.oegeg.etd.views.CustomRenderer.RoleGridRenderer;
-import static at.oegeg.etd.views.CustomRenderer.RoleRenderer;
 
 @PageTitle("User | OegegEtd")
 @Route(value = "user", layout = MainLayout.class)
