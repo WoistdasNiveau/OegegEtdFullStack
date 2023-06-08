@@ -7,9 +7,8 @@ import at.oegeg.etd.DataTransferObjects.Services.Implementations.EmailSenderServ
 import at.oegeg.etd.DataTransferObjects.Services.Implementations.UserService;
 import at.oegeg.etd.DataTransferObjects.Services.Implementations.VehicleService;
 import at.oegeg.etd.DataTransferObjects.Services.Implementations.WorkService;
-import at.oegeg.etd.Entities.UserEntity;
+import at.oegeg.etd.Security.SecurityService;
 import at.oegeg.etd.views.Forms.UserForm;
-import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
@@ -20,22 +19,21 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
-import com.vaadin.flow.router.*;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinService;
 import jakarta.annotation.security.RolesAllowed;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Comparator;
-import java.util.Objects;
-import java.util.Set;
 
-import static at.oegeg.etd.Security.SecurityService.GetAuthorities;
 import static at.oegeg.etd.views.CustomRenderer.CreatePrioritiesRenderer;
 import static at.oegeg.etd.views.CustomRenderer.RoleGridRenderer;
 
-@PageTitle("User details | OegegEtd")
-@Route(value = "user", layout = MainLayout.class)
-@RolesAllowed("ADMIN")
-public class UserDetailsView extends VerticalLayout implements HasUrlParameter<String>
+@PageTitle("Profile | OegegEtd")
+@Route(value = "profile", layout = MainLayout.class)
+@RolesAllowed({"USER", "LEADER", "ADMIN"})
+public class ProfileView extends VerticalLayout
 {
     // == view fields ==
     H2 userTilte = new H2("User");
@@ -50,12 +48,13 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
     H2 updatedWorksTitle = new H2("Updated works");
     TextField updatedWorksField = new TextField();
     Grid<UserDisplay> userGrid = new Grid<>(UserDisplay.class,false);
-    Button resendButton = new Button("Resend email");
     Grid<VehicleDisplay> createdVehiclesGrid = new Grid<>(VehicleDisplay.class, false);
     Grid<VehicleDisplay> updatedVehiclesGrid = new Grid<>(VehicleDisplay.class, false);
     Grid<WorkDisplay> responsibleForGrid = new Grid<>(WorkDisplay.class, false);
     Grid<WorkDisplay> createdWorksGrid = new Grid<>(WorkDisplay.class, false);
     Grid<WorkDisplay> updatedWorksGrid = new Grid<>(WorkDisplay.class, false);
+    Button resetPasswordButton = new Button("Change password");
+    Button logoutButton = new Button("Logout");
 
     UserForm userForm;
 
@@ -64,47 +63,27 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
     private final VehicleService _vehicleService;
     private final WorkService _workService;
     private final EmailSenderService _emailSenderService;
-    private String userIdentifier;
+    private final SecurityService _securityService;
 
-    // == constructor ==
-    public UserDetailsView(UserService _userService, VehicleService _vehicleService, WorkService _workService, EmailSenderService emailSenderService)
+    private final String userIdentifier;
+    private UserDisplay userDisplay;
+
+    public ProfileView(UserService _userService, VehicleService _vehicleService, WorkService _workService, EmailSenderService _emailSenderService,
+                       SecurityService securityService)
     {
+        _securityService = securityService;
         this._userService = _userService;
         this._vehicleService = _vehicleService;
         this._workService = _workService;
-        this._emailSenderService = emailSenderService;
-    }
+        this._emailSenderService = _emailSenderService;
+        userIdentifier = SecurityContextHolder.getContext().getAuthentication().getName();
 
-    // == public methods ==
-    @Override
-    public void setParameter(BeforeEvent beforeEvent, String s)
-    {
-        if(s == null || s.equals(""))
-        {
-            userIdentifier = SecurityContextHolder.getContext().getAuthentication().getName();
-        }
-        else
-        {
-            userIdentifier = s;
-        }
-
-
-
-        if(!SecurityContextHolder.getContext().getAuthentication().getName().equals(userIdentifier) || !Objects.requireNonNull(GetAuthorities()).contains("ADMIN"))
-        {
-            UI.getCurrent().getPage().setLocation("");
-        }
-
-        if(!GetAuthorities().contains("ADMIN"))
-        {
-            resendButton.setVisible(false);
-            resendButton.setEnabled(false);
-        }
-
-        ConfigureResendButton();
         ConfigureUserForm();
         ConfigureGrids();
         ConfigureTextFields();
+        ConfigureResetPasswordButton();
+        ConfigureLogoutButton();
+
         userReload();
         ReloadAll();
 
@@ -114,7 +93,7 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
     // == private methods ==
     private void SetContent()
     {
-        HorizontalLayout userToolBar = new HorizontalLayout(userTilte, resendButton);
+        HorizontalLayout userToolBar = new HorizontalLayout(userTilte, resetPasswordButton, logoutButton);
 
         HorizontalLayout responsibleForToolbar = new HorizontalLayout(responsibleForTitle, responsibleForField);
         VerticalLayout responsibleForView = new VerticalLayout(responsibleForToolbar, responsibleForGrid);
@@ -145,7 +124,8 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
 
     private void userReload()
     {
-        userGrid.setItems(_userService.FindByIdentifier(userIdentifier));
+        //userGrid.setItems(_userService.FindByIdentifier(userIdentifier));
+        userGrid.setItems(userDisplay);
     }
     private void responibleGridReload(String filter)
     {
@@ -174,6 +154,7 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
 
     private void ReloadAll()
     {
+        userDisplay = _userService.FindByIdentifier(userIdentifier);
         userReload();
         responibleGridReload("");
         createdWorksGridReload("");
@@ -182,9 +163,26 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
         updatedVehiclesGridReload("");
     }
 
+    private void ConfigureLogoutButton()
+    {
+        logoutButton.addClickListener(t -> _securityService.Logout());
+    }
+
+    private void ConfigureResetPasswordButton()
+    {
+        resetPasswordButton.addClickListener(t -> ResetPasswort());
+    }
+
+    private void ResetPasswort()
+    {
+        _emailSenderService.ChangePasswordMail("oliver01@kabsi.at", userIdentifier,userDisplay.getName());
+        _securityService.Logout();
+    }
+
     private void ConfigureUserForm()
     {
         userForm = new UserForm(_userService);
+        userForm.roleSelect.setReadOnly(true);
         userForm.deleteButton.setVisible(true);
         userForm.setWidth("25em");
 
@@ -204,7 +202,7 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
         }
         userForm.SetSelectedUser(userDisplay);
         userForm.setVisible(true);
-       addClassName("editing");
+        addClassName("editing");
     }
 
     private void UpdateUser(UserForm.SaveEvent event)
@@ -228,15 +226,6 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
         removeClassName("editing");
 
         userGrid.deselectAll();
-    }
-
-    private void ConfigureResendButton()
-    {
-        UserDisplay user = _userService.FindByIdentifier(userIdentifier);
-        resendButton.setVisible(!user.isEnabled());
-        resendButton.setEnabled(!user.isEnabled());
-
-        resendButton.addClickListener(t -> _emailSenderService.SendSetPasswortMail("oliver01@kabsi.at", user.getIdentifier(), user.getName()));
     }
 
     private void ConfigureTextFields()
@@ -380,33 +369,4 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
         updatedVehiclesGrid.asSingleSelect().addValueChangeListener( t -> UI.getCurrent().getPage().setLocation("vehicle/" + t.getValue().getIdentifier()));
         updatedVehiclesGrid.setHeight("400px");
     }
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

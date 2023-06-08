@@ -4,6 +4,7 @@ import at.oegeg.etd.DataTransferObjects.DisplayModels.UserDisplay;
 import at.oegeg.etd.Entities.Enums.Role;
 import at.oegeg.etd.Entities.UserEntity;
 import at.oegeg.etd.Repositories.IUserEntityRepository;
+import com.vaadin.flow.server.*;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -82,6 +83,7 @@ public class UserService
         user.setIsUserEnabled(true);
         user.setPassword(_passwordEncoder.encode(password));
         _userRepository.save(user);
+
     }
 
     // == private methods ==

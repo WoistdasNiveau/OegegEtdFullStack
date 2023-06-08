@@ -9,7 +9,6 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.select.Select;
@@ -29,7 +28,7 @@ public class UserForm extends FormLayout
     TextField nameField = new TextField("Name");
     TextField emailField = new TextField("Email");
     TextField telephoneField = new TextField("Telephone Number");
-    Select<Role> roleBox = new Select<>();
+    public Select<Role> roleSelect = new Select<>();
     Button saveButton = new Button("Save");
     public Button deleteButton = new Button("Delete");
     Button cancelButton = new Button("Cancel");
@@ -64,7 +63,7 @@ public class UserForm extends FormLayout
                 nameField,
                 emailField,
                 telephoneField,
-                roleBox,
+                roleSelect,
                 buttonLayout
         );
     }
@@ -74,14 +73,14 @@ public class UserForm extends FormLayout
         binder.bind(nameField, UserDisplay::getName, UserDisplay::setName);
         binder.bind(emailField, UserDisplay::getEmail, UserDisplay::setEmail);
         binder.bind(telephoneField, UserDisplay::getTelephoneNumber, UserDisplay::setTelephoneNumber);
-        binder.bind(roleBox, UserDisplay::getRole, UserDisplay::setRole);
+        binder.bind(roleSelect, UserDisplay::getRole, UserDisplay::setRole);
     }
 
     private void ConfigureRoleBox()
     {
-        roleBox.setLabel("Role");
-        roleBox.setRenderer(RoleRenderer());
-        roleBox.setItems(Role.values());
+        roleSelect.setLabel("Role");
+        roleSelect.setRenderer(RoleRenderer());
+        roleSelect.setItems(Role.values());
     }
 
     private Component ConfigureButtonLayout()

@@ -1,18 +1,21 @@
 package at.oegeg.etd.views;
 
 
+import at.oegeg.etd.DataTransferObjects.Services.Implementations.UserService;
 import at.oegeg.etd.Security.SecurityService;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.Header;
-import com.vaadin.flow.component.html.ListItem;
-import com.vaadin.flow.component.html.Nav;
-import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.html.UnorderedList;
+import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.theme.lumo.LumoUtility.AlignItems;
 import com.vaadin.flow.theme.lumo.LumoUtility.BoxSizing;
 import com.vaadin.flow.theme.lumo.LumoUtility.Display;
@@ -28,6 +31,7 @@ import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
 import com.vaadin.flow.theme.lumo.LumoUtility.TextColor;
 import com.vaadin.flow.theme.lumo.LumoUtility.Whitespace;
 import com.vaadin.flow.theme.lumo.LumoUtility.Width;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
 import java.util.Objects;
@@ -42,7 +46,8 @@ public class MainLayout extends AppLayout {
     /**
      * A simple navigation item component, based on ListItem element.
      */
-    public static class MenuItemInfo extends ListItem {
+    public static class MenuItemInfo extends ListItem
+    {
 
         private final Class<? extends Component> view;
 
@@ -65,15 +70,18 @@ public class MainLayout extends AppLayout {
             add(link);
         }
 
+
         public Class<?> getView() {
             return view;
         }
 
     }
     private final SecurityService _securityService;
-    public MainLayout(SecurityService securityService)
+    private final UserService _userService;
+    public MainLayout(SecurityService securityService, UserService userService)
     {
         _securityService = securityService;
+        _userService = userService;
         addToNavbar(createHeaderContent());
     }
 
@@ -100,7 +108,7 @@ public class MainLayout extends AppLayout {
             list.add(menuItem);
 
         }
-        list.add(new Button("Log out", e-> _securityService.Logout()));
+        list.add();
 
         header.add(layout, nav);
         return header;
@@ -116,7 +124,8 @@ public class MainLayout extends AppLayout {
 
                     new MenuItemInfo("Users", LineAwesomeIcon.FILE.create(), UserView.class), //
 
-
+                    new MenuItemInfo(_userService.FindByIdentifier(SecurityContextHolder.getContext().getAuthentication().getName()).getName(),
+                            LineAwesomeIcon.USER.create(),ProfileView.class),
             };
         }
         else
