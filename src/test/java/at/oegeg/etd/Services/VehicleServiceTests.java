@@ -199,10 +199,10 @@ public class VehicleServiceTests
     public void VehicleService_UpdateVehicle()
     {
         String id = "3";
-        Authentication authentication = Mockito.mock(Authentication.class);
         VehicleDisplay display = Mockito.mock(VehicleDisplay.class);
         VehicleEntity entity = Mockito.mock(VehicleEntity.class);
         SecurityContext securityContext = Mockito.mock(SecurityContext.class);
+        Authentication authentication = Mockito.mock(Authentication.class);
 
 
         when(securityContext.getAuthentication()).thenReturn(authentication);

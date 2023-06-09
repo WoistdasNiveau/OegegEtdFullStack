@@ -34,8 +34,7 @@ public class WorkService
         {
             WorkEntity entity = WorkDisplayToEntity(workDisplay);
             entity.setVehicle(_vehicleRepository.findByIdentifier(vehicleIdentifier).orElseThrow());
-            entity.setCreatedBy(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier(SecurityContextHolder.getContext().getAuthentication().getName()
-                    .toString()).orElseThrow());
+            entity.setCreatedBy(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow());
             _workRepository.save(entity);
         }
         else
@@ -126,7 +125,7 @@ public class WorkService
                 .identifier(w.getIdentifier())
                 .vehicle(w.getVehicle().getNumber())
                 .vehicleIdentifier(w.getVehicle().getIdentifier())
-                .responsiblePerson(w.getResponsiblePerson().getName())
+                .responsiblePerson(w.getResponsiblePerson() != null ? w.getResponsiblePerson().getName() : "-")
                 .description(w.getDescription())
                 .priority(w.getPriority())
                 .build()).collect(Collectors.toList());
