@@ -2,6 +2,7 @@ package at.oegeg.etd.Services.Implementations;
 
 import at.oegeg.etd.DataTransferObjects.DisplayModels.VehicleDisplay;
 import at.oegeg.etd.DataTransferObjects.DisplayModels.WorkDisplay;
+import at.oegeg.etd.Entities.Enums.Priorities;
 import at.oegeg.etd.Entities.UserEntity;
 import at.oegeg.etd.Entities.VehicleEntity;
 import at.oegeg.etd.Entities.WorkEntity;
@@ -119,7 +120,9 @@ public class VehicleService
                 .type(t.getType())
                 .status(t.getStatus())
                 .stand(t.getStand())
+                .priority(Priorities.NONE)
                 .createdBy(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow())
+                .works(new ArrayList<>())
                 .build())
                 .collect(Collectors.toList());
     }
