@@ -115,15 +115,25 @@ public class UserService
     {
         return displays.stream().map(u -> UserEntity.builder()
                 .identifier(UUID.randomUUID().toString())
-                .name(!u.getName().equals("") ? u.getName() : null)
-                .email(!u.getEmail().equals("") ? u.getEmail() : null)
-                .telephoneNumber(!u.getTelephoneNumber().equals("") ? u.getTelephoneNumber() : null)
+                .name(u.getName() != null && !u.getName().equals("") ? u.getName() : null)
+                .email(u.getEmail() != null && !u.getEmail().equals("") ? u.getEmail() : null)
+                .telephoneNumber(u.getTelephoneNumber() != null && !u.getTelephoneNumber().equals("") ? u.getTelephoneNumber() : null )
                 .role(u.getRole())
                 .build()).collect(Collectors.toList());
     }
     @PostConstruct
     private void Init()
     {
+        if(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier("oliver01@kabsi.at").isEmpty())
+        {
+            _userRepository.save(UserEntity.builder()
+                    .identifier(UUID.randomUUID().toString())
+                    .name("Oliver Stöckl")
+                    .email("oliver01@kabsi.at")
+                    .password(_passwordEncoder.encode("Passwort"))
+                    .IsUserEnabled(true)
+                    .build());
+        }
         if(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier("defaultUser").isEmpty())
         {
             _userRepository.save(UserEntity.builder()
@@ -133,38 +143,38 @@ public class UserService
                     .IsUserEnabled(false)
                     .build());
         }
-        if(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier("User").isEmpty())
-        {
-            _userRepository.save(UserEntity.builder()
-                    .identifier(UUID.randomUUID().toString())
-                    .name("User")
-                    .password(_passwordEncoder.encode("Passwort"))
-                    .IsUserEnabled(true)
-                    .role(Role.USER)
-                    .email("User")
-                    .build());
-        }
-        if(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier("Leader").isEmpty())
-        {
-            _userRepository.save(UserEntity.builder()
-                    .identifier(UUID.randomUUID().toString())
-                    .name("Leader")
-                    .password(_passwordEncoder.encode("Passwort"))
-                    .IsUserEnabled(true)
-                    .role(Role.LEADER)
-                    .email("Leader")
-                    .build());
-        }
-        if(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier("Admin").isEmpty())
-        {
-            _userRepository.save(UserEntity.builder()
-                    .identifier(UUID.randomUUID().toString())
-                    .name("Admin")
-                    .password(_passwordEncoder.encode("Passwort"))
-                    .IsUserEnabled(true)
-                    .role(Role.ADMIN)
-                    .email("Admin")
-                    .build());
-        }
+        //if(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier("User").isEmpty())
+        //{
+        //    _userRepository.save(UserEntity.builder()
+        //            .identifier(UUID.randomUUID().toString())
+        //            .name("User")
+        //            .password(_passwordEncoder.encode("Passwort"))
+        //            .IsUserEnabled(true)
+        //            .role(Role.USER)
+        //            .email("User")
+        //            .build());
+        //}
+        //if(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier("Leader").isEmpty())
+        //{
+        //    _userRepository.save(UserEntity.builder()
+        //            .identifier(UUID.randomUUID().toString())
+        //            .name("Leader")
+        //            .password(_passwordEncoder.encode("Passwort"))
+        //            .IsUserEnabled(true)
+        //            .role(Role.LEADER)
+        //            .email("Leader")
+        //            .build());
+        //}
+        //if(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier("Admin").isEmpty())
+        //{
+        //    _userRepository.save(UserEntity.builder()
+        //            .identifier(UUID.randomUUID().toString())
+        //            .name("Admin")
+        //            .password(_passwordEncoder.encode("Passwort"))
+        //            .IsUserEnabled(true)
+        //            .role(Role.ADMIN)
+        //            .email("Admin")
+        //            .build());
+        //}
     }
 }
