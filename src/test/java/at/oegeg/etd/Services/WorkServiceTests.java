@@ -93,6 +93,7 @@ public class WorkServiceTests
         when(vehicle.getNumber()).thenReturn("325");
         when(vehicle.getIdentifier()).thenReturn("5757");
         when(vehicleRepository.findByIdentifier(anyString())).thenReturn(Optional.ofNullable(vehicle));
+        when(userEntityRepository.)
 
         workService.FindAllByVehicle(identifier,"");
         workService.FindAllByVehicle(identifier,"3");

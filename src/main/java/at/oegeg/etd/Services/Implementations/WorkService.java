@@ -1,7 +1,9 @@
 package at.oegeg.etd.Services.Implementations;
 
 import at.oegeg.etd.DataTransferObjects.DisplayModels.WorkDisplay;
+import at.oegeg.etd.Entities.Enums.Priorities;
 import at.oegeg.etd.Entities.UserEntity;
+import at.oegeg.etd.Entities.VehicleEntity;
 import at.oegeg.etd.Entities.WorkEntity;
 import at.oegeg.etd.Repositories.IUserEntityRepository;
 import at.oegeg.etd.Repositories.IVehicleRepository;
@@ -33,9 +35,12 @@ public class WorkService
         if(workDisplay.getIdentifier() == null || workDisplay.getIdentifier().equals(""))
         {
             WorkEntity entity = WorkDisplayToEntity(workDisplay);
-            entity.setVehicle(_vehicleRepository.findByIdentifier(vehicleIdentifier).orElseThrow());
+            VehicleEntity vehicle = _vehicleRepository.findByIdentifier(vehicleIdentifier).orElseThrow();
+            entity.setVehicle(vehicle);
             entity.setCreatedBy(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow());
+            vehicle.getWorks().add(entity);
             _workRepository.save(entity);
+            _vehicleRepository.save(vehicle);
         }
         else
         {
@@ -60,9 +65,9 @@ public class WorkService
         return WorkEntitiesToDisplay(_workRepository.findByVehicleAndSearchString(vehicleIdentifier, filter));
     }
 
-    public List<WorkDisplay> FindAllByResponsiblePerson(String responsiblePesonIdentifier, String filter)
+    public List<WorkDisplay> FindAllByResponsiblePerson(String responsiblePersonIdentifier, String filter)
     {
-        UserEntity user = _userRepository.findByIdentifier(responsiblePesonIdentifier).orElseThrow();
+        UserEntity user = _userRepository.findByIdentifier(responsiblePersonIdentifier).orElseThrow();
         if(filter == null || filter.equals(""))
         {
             return WorkEntitiesToDisplay(_workRepository.findByResponsiblePerson(user).orElse(new ArrayList<>()));
@@ -70,9 +75,9 @@ public class WorkService
         return  WorkEntitiesToDisplay(_workRepository.findByResponsiblePersonAndSearchString(user,filter));
     }
 
-    public List<WorkDisplay> FindAllByCreatedBy(String responsiblePesonIdentifier, String filter)
+    public List<WorkDisplay> FindAllByCreatedBy(String createdByIdentifier, String filter)
     {
-        UserEntity user = _userRepository.findByIdentifier(responsiblePesonIdentifier).orElseThrow();
+        UserEntity user = _userRepository.findByIdentifier(createdByIdentifier).orElseThrow();
         if(filter == null || filter.equals(""))
         {
             return WorkEntitiesToDisplay(_workRepository.findByCreatedBy(user).orElse(new ArrayList<>()));
@@ -80,9 +85,9 @@ public class WorkService
         return WorkEntitiesToDisplay(_workRepository.findByCreatedByAndSearchString(user,filter));
     }
 
-    public List<WorkDisplay> FindAllByUpdatedBy(String responsiblePesonIdentifier, String filter)
+    public List<WorkDisplay> FindAllByUpdatedBy(String updatedByIdentifier, String filter)
     {
-        UserEntity user = _userRepository.findByIdentifier(responsiblePesonIdentifier).orElseThrow();
+        UserEntity user = _userRepository.findByIdentifier(updatedByIdentifier).orElseThrow();
         if(filter == null || filter.equals(""))
         {
             return WorkEntitiesToDisplay(_workRepository.findByUpdatedBy(user).orElse(new ArrayList<>()));
@@ -96,6 +101,7 @@ public class WorkService
         WorkEntity work = _workRepository.findByIdentifier(workIdentifier).orElseThrow();
         work.getVehicle().getWorks().remove(work);
         _vehicleRepository.save(work.getVehicle());
+        _workRepository.delete(work);
     }
 
     // == private methods
@@ -111,7 +117,7 @@ public class WorkService
                 .responsiblePerson(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier(w.getResponsiblePerson()).orElse(
                         _userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier("defaultUser").orElseThrow()))
                 .description(w.getDescription())
-                .priority(w.getPriority())
+                .priority(w.getPriority() != null ? w.getPriority() : Priorities.NONE)
                 .build()).collect(Collectors.toList());
     }
 
@@ -128,6 +134,8 @@ public class WorkService
                 .responsiblePerson(w.getResponsiblePerson() != null ? w.getResponsiblePerson().getName() : "-")
                 .description(w.getDescription())
                 .priority(w.getPriority())
+                .createdBy(w.getCreatedBy().getName())
+                .updatedBy(w.getUpdatedBy() != null ? w.getUpdatedBy().getName() : "")
                 .build()).collect(Collectors.toList());
     }
 }

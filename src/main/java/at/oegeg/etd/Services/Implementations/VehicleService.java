@@ -66,10 +66,17 @@ public class VehicleService
         return VehicleEntitiesToVehicleDisplay(_vehicleRepository.findBySearchStringAndUpdatedBy(filter, user));
     }
 
-    public byte[] DownloadVehiclePdf(String identifier) throws DocumentException, IOException
+    public byte[] DownloadVehiclePdf(String identifier)
     {
         VehicleEntity entity = _vehicleRepository.findByIdentifier(identifier).orElseThrow();
-        return _pdfService.GenerateVehiclePdf(entity);
+        try
+        {
+            return _pdfService.GenerateVehiclePdf(entity);
+        }
+        catch (Exception ex)
+        {
+            return null;
+        }
     }
 
     public long VehiclesCount()
@@ -86,6 +93,7 @@ public class VehicleService
     public void SaveVehicle(VehicleDisplay vehicleDisplay)
     {
         VehicleEntity entity = VehicleDisplayToEntity(vehicleDisplay);
+        entity.getCreatedBy().getCreatedVehicles().add(entity);
         if(vehicleDisplay.getWorks()!= null && vehicleDisplay.getWorks().stream().count() > 0)
         {
             List<WorkEntity> works = WorkDisplayToWorkEntity(vehicleDisplay.getWorks());
@@ -140,8 +148,9 @@ public class VehicleService
                         .status(e.getStatus())
                         .stand(e.getStand())
                         .workCount(e.getWorkCount() != null ? e.getWorkCount() : 0)
-                .build())
-                .collect(Collectors.toList());
+                        .works(WorkEntitiesToDisplays(e.getWorks()))
+                        .build())
+                        .collect(Collectors.toList());
     }
 
     private List<WorkEntity> WorkDisplayToWorkEntity(List<WorkDisplay> requests)
@@ -159,6 +168,20 @@ public class VehicleService
                     .build());
         }
         return works;
+    }
+
+    private List<WorkDisplay> WorkEntitiesToDisplays(List<WorkEntity> entities)
+    {
+        return entities.stream().map(t -> WorkDisplay.builder()
+                .identifier(t.getIdentifier())
+                .vehicle(t.getVehicle().getNumber())
+                .vehicleIdentifier(t.getVehicle().getIdentifier())
+                .responsiblePerson(t.getResponsiblePerson() != null ? t.getResponsiblePerson().getName() : "")
+                .description(t.getDescription())
+                .priority( t.getPriority())
+                .createdBy(t.getCreatedBy().getName())
+                .updatedBy(t.getUpdatedBy() != null ? t.getUpdatedBy().getName() : "")
+                .build()).collect(Collectors.toList());
     }
 
 }
