@@ -3,6 +3,7 @@ package at.oegeg.etd.views.Forms;
 import at.oegeg.etd.DataTransferObjects.DisplayModels.UserDisplay;
 import at.oegeg.etd.Services.Implementations.UserService;
 import at.oegeg.etd.Entities.Enums.Role;
+import at.oegeg.etd.views.Converters.TelephoneNumberConverter;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -12,10 +13,14 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.component.textfield.EmailField;
+import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.shared.Registration;
+
+import java.util.regex.Pattern;
 
 import static at.oegeg.etd.views.CustomRenderer.RoleRenderer;
 
@@ -26,8 +31,8 @@ public class UserForm extends FormLayout
 
     // == view Fields ==
     TextField nameField = new TextField("Name");
-    TextField emailField = new TextField("Email");
-    TextField telephoneField = new TextField("Telephone Number");
+    EmailField emailField = new EmailField("Email");
+    NumberField telephoneField = new NumberField("Telephone Number");
     public Select<Role> roleSelect = new Select<>();
     Button saveButton = new Button("Save");
     public Button deleteButton = new Button("Delete");
@@ -46,6 +51,7 @@ public class UserForm extends FormLayout
         ConfigureBinder();
         ConfigureRoleBox();
         ConfigureContent();
+        ConfigureFields();
     }
 
     // == public methods ==
@@ -68,12 +74,50 @@ public class UserForm extends FormLayout
         );
     }
 
+    private void ConfigureFields()
+    {
+        nameField.setClearButtonVisible(true);
+        nameField.addValueChangeListener(t -> FieldsValid());
+
+        emailField.setErrorMessage("Must be a valid Email");
+        emailField.setClearButtonVisible(true);
+        emailField.addValueChangeListener(t -> FieldsValid());
+
+        telephoneField.setClearButtonVisible(true);
+        telephoneField.addValueChangeListener(t -> FieldsValid());
+
+        roleSelect.setValue(Role.USER);
+        roleSelect.addValueChangeListener(t -> FieldsValid());
+    }
+
+    private void FieldsValid()
+    {
+        String emailRegex = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+        Pattern emailPattern = Pattern.compile(emailRegex);
+
+        String phoneRegex = "^[0-9]{10}$";
+        Pattern phonePattern = Pattern.compile(phoneRegex);
+
+        boolean nameValid = !nameField.isEmpty();
+        boolean emailValid = !emailField.isEmpty() && emailPattern.matcher(emailField.getValue()).matches();
+        boolean phoneValid = !telephoneField.isEmpty();
+        boolean roleValid = !roleSelect.isEmpty();
+        saveButton.setEnabled(nameValid && emailValid && phoneValid && roleValid);
+    }
+
     private void ConfigureBinder()
     {
-        binder.bind(nameField, UserDisplay::getName, UserDisplay::setName);
-        binder.bind(emailField, UserDisplay::getEmail, UserDisplay::setEmail);
-        binder.bind(telephoneField, UserDisplay::getTelephoneNumber, UserDisplay::setTelephoneNumber);
-        binder.bind(roleSelect, UserDisplay::getRole, UserDisplay::setRole);
+        binder.forField(nameField)
+                .asRequired()
+                .bind(UserDisplay::getName, UserDisplay::setName);
+        binder.forField(emailField)
+                .asRequired()
+                .bind(UserDisplay::getEmail, UserDisplay::setEmail);
+        binder.forField(telephoneField)
+                .withConverter(new TelephoneNumberConverter())
+                .bind(UserDisplay::getTelephoneNumber, UserDisplay::setTelephoneNumber);
+        binder.forField(roleSelect).asRequired().bind(UserDisplay::getRole, UserDisplay::setRole);
+
     }
 
     private void ConfigureRoleBox()
@@ -81,6 +125,7 @@ public class UserForm extends FormLayout
         roleSelect.setLabel("Role");
         roleSelect.setRenderer(RoleRenderer());
         roleSelect.setItems(Role.values());
+        roleSelect.setValue(Role.USER);
     }
 
     private Component ConfigureButtonLayout()

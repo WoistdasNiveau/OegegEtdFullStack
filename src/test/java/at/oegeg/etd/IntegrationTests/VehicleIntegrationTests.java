@@ -1,10 +1,7 @@
 package at.oegeg.etd.IntegrationTests;
 
-import at.oegeg.etd.Config.ApplicationConfig;
-import at.oegeg.etd.Config.SecurityConfig;
 import at.oegeg.etd.Configs.TestConfig;
 import at.oegeg.etd.DataTransferObjects.DisplayModels.VehicleDisplay;
-import at.oegeg.etd.Entities.Enums.Priorities;
 import at.oegeg.etd.Entities.Enums.Role;
 import at.oegeg.etd.Entities.UserEntity;
 import at.oegeg.etd.Entities.VehicleEntity;
@@ -13,8 +10,6 @@ import at.oegeg.etd.Repositories.IVehicleRepository;
 import at.oegeg.etd.Services.Implementations.VehicleService;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
@@ -30,7 +25,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

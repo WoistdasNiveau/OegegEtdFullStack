@@ -132,6 +132,7 @@ public class UserService
                     .email("oliver01@kabsi.at")
                     .password(_passwordEncoder.encode("Passwort"))
                     .IsUserEnabled(true)
+                    .role(Role.ADMIN)
                     .build());
         }
         if(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier("defaultUser").isEmpty())

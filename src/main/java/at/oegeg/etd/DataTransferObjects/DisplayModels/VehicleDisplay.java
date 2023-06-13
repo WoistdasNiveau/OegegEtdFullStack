@@ -1,10 +1,7 @@
 package at.oegeg.etd.DataTransferObjects.DisplayModels;
 
 import at.oegeg.etd.Entities.Enums.Priorities;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
@@ -12,6 +9,8 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Data
+@Getter
+@Setter
 public class VehicleDisplay
 {
     private String identifier;

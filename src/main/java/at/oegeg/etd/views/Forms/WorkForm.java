@@ -46,9 +46,15 @@ public class WorkForm extends FormLayout
     {
         _userRepository = userRepository;
 
-        binder.bind(description, WorkDisplay::getDescription, WorkDisplay::setDescription);
+        binder.forField(description)
+                .asRequired()
+                .bind( WorkDisplay::getDescription, WorkDisplay::setDescription);
         binder.bind(priority, WorkDisplay::getPriority, WorkDisplay::setPriority);
         binder.bind(responsiblePerson, WorkDisplay::getResponsiblePerson, WorkDisplay::setResponsiblePerson);
+
+        description.addValueChangeListener(t -> SaveEnabled());
+        priority.addValueChangeListener(t -> SaveEnabled());
+        responsiblePerson.addValueChangeListener(t -> SaveEnabled());
 
         UpdateUsers();
         ConfigurePriorities();
@@ -112,6 +118,13 @@ public class WorkForm extends FormLayout
         priority.setRenderer(CreatePrioritiesRenderer());
         priority.setLabel("Priority");
         priority.setItems(Priorities.values());
+        priority.setEmptySelectionAllowed(false);
+        priority.setRequiredIndicatorVisible(true);
+    }
+
+    private void SaveEnabled()
+    {
+        saveButton.setEnabled(!description.isEmpty());
     }
     private static ComponentRenderer<Span, Priorities> CreatePrioritiesRenderer()
     {

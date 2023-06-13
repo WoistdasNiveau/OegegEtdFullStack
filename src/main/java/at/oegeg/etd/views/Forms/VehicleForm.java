@@ -34,8 +34,12 @@ public class VehicleForm extends FormLayout
     public VehicleForm(boolean deleteEnabled)
     {
         this.deleteEnabled = deleteEnabled;
-        binder.bindInstanceFields(this);
+        //binder.bindInstanceFields(this);
         addClassName("createVehicleForm");
+
+        ConfigureBinder();
+        ConfigureTextFields();
+
 
         add(type,number,status,stand,createButtonlayout());
     }
@@ -53,6 +57,37 @@ public class VehicleForm extends FormLayout
     }
 
     // == private methods ==
+    private void ConfigureBinder()
+    {
+        binder.forField(type)
+                .asRequired()
+                .bind(VehicleDisplay::getType, VehicleDisplay::setType);
+        binder.forField(number)
+                .asRequired()
+                .bind(VehicleDisplay::getNumber, VehicleDisplay::setNumber);
+        binder.forField(status)
+                .asRequired()
+                .bind(VehicleDisplay::getStatus, VehicleDisplay::setStatus);
+        binder.forField(stand)
+                .asRequired()
+                .bind(VehicleDisplay::getStand, VehicleDisplay::setStand);
+    }
+
+    private void ConfigureTextFields()
+    {
+        type.addValueChangeListener(t -> SaveEnabled());
+        type.setRequired(true);
+
+        number.addValueChangeListener(t -> SaveEnabled());
+        number.setRequired(true);
+
+        status.addValueChangeListener(t -> SaveEnabled());
+        status.setRequired(true);
+
+        stand.addValueChangeListener(t -> SaveEnabled());
+        stand.setRequired(true);
+    }
+
     private Component createButtonlayout()
     {
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -89,6 +124,11 @@ public class VehicleForm extends FormLayout
         {
             ex.printStackTrace();
         }
+    }
+
+    private void SaveEnabled()
+    {
+        save.setEnabled(!type.isEmpty() && !number.isEmpty() && !stand.isEmpty() && !status.isEmpty());
     }
 
     // == events ==
