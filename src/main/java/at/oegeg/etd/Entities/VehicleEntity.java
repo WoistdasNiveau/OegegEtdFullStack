@@ -43,7 +43,7 @@ public class VehicleEntity
 
     @OneToMany(mappedBy="vehicle", fetch = FetchType.EAGER, orphanRemoval = true)
     @Cascade({CascadeType.PERSIST,CascadeType.MERGE,CascadeType.REMOVE})
-    private List<WorkEntity> works;
+    private List<WorkEntity> works = new ArrayList<>();
 
     @ManyToOne
     private UserEntity createdBy;

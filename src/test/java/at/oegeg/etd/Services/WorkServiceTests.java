@@ -87,13 +87,17 @@ public class WorkServiceTests
         String identifier = "546";
         WorkEntity work = Mockito.mock(WorkEntity.class);
         work.setVehicle(vehicle);
+        UserEntity createdBy = Mockito.mock(UserEntity.class);
+        ArrayList list = new ArrayList(List.of(createdBy));
 
         when(workRepository.findByVehicle(any(VehicleEntity.class))).thenReturn(Optional.of(List.of(work)));
         when(work.getVehicle()).thenReturn(vehicle);
         when(vehicle.getNumber()).thenReturn("325");
         when(vehicle.getIdentifier()).thenReturn("5757");
         when(vehicleRepository.findByIdentifier(anyString())).thenReturn(Optional.ofNullable(vehicle));
-        when(userEntityRepository.)
+        when(work.getCreatedBy()).thenReturn(createdBy);
+        when(work.getCreatedBy().getCreatedVehicles()).thenReturn(list);
+        //when(userEntityRepository.)
 
         workService.FindAllByVehicle(identifier,"");
         workService.FindAllByVehicle(identifier,"3");

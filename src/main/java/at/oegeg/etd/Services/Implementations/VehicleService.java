@@ -87,6 +87,12 @@ public class VehicleService
     public void DeleteVehicle(String identifier)
     {
         VehicleEntity vehicle = _vehicleRepository.findByIdentifier(identifier).orElseThrow();
+        vehicle.getWorks().clear();
+        vehicle.getCreatedBy().getCreatedVehicles().remove(vehicle);
+        if(vehicle.getUpdatedBy() != null)
+        {
+            vehicle.getUpdatedBy().getUpdatedVehicles().remove(vehicle);
+        }
         _vehicleRepository.delete(vehicle);
     }
 
@@ -148,7 +154,7 @@ public class VehicleService
                         .status(e.getStatus())
                         .stand(e.getStand())
                         .workCount(e.getWorkCount() != null ? e.getWorkCount() : 0)
-                        .works(WorkEntitiesToDisplays(e.getWorks()))
+                        .works(e.getWorks() != null && e.getWorks().size() > 0 ? WorkEntitiesToDisplays(e.getWorks()) : new ArrayList<>())
                         .build())
                         .collect(Collectors.toList());
     }

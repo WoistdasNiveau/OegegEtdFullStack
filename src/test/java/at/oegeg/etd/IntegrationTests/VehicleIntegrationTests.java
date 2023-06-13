@@ -66,6 +66,8 @@ public class VehicleIntegrationTests
                 .createdWorks(new ArrayList<>())
                 .build();
 
+        userRepository.save(user);
+
         // Create an authentication token for the user
         Authentication authentication = new UsernamePasswordAuthenticationToken(user, user.getPassword(), user.getAuthorities());
 

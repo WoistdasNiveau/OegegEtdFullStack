@@ -81,6 +81,7 @@ public class VehicleServiceTests
                 .status("o")
                 .stand("123")
                 .workCount(0L)
+                .works(new ArrayList<>())
                 .build();
 
 
@@ -160,8 +161,12 @@ public class VehicleServiceTests
     public void VehicleService_DeleteVehicle_RepositoryCount0()
     {
         VehicleEntity entity = Mockito.mock(VehicleEntity.class);
+        UserEntity user = Mockito.mock(UserEntity.class);
+        ArrayList list = new ArrayList(List.of(entity));
 
         when(vehicleRepository.findByIdentifier(anyString())).thenReturn(Optional.of(entity));
+        when(entity.getCreatedBy()).thenReturn(user);
+        when(entity.getCreatedBy().getCreatedVehicles()).thenReturn(list);
 
         vehicleService.DeleteVehicle("3");
 

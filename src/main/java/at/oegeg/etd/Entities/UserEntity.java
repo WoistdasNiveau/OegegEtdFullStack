@@ -13,6 +13,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -42,23 +43,23 @@ public class UserEntity implements UserDetails
 
     @OneToMany(mappedBy = "createdBy", fetch = FetchType.EAGER)
     @Cascade(CascadeType.ALL)
-    private List<VehicleEntity> createdVehicles;
+    private List<VehicleEntity> createdVehicles = new ArrayList<>();
 
     @OneToMany(mappedBy = "createdBy", fetch = FetchType.EAGER)
     @Cascade(CascadeType.SAVE_UPDATE)
-    private List<WorkEntity> createdWorks;
+    private List<WorkEntity> createdWorks = new ArrayList<>();
 
     @OneToMany(mappedBy = "responsiblePerson", fetch = FetchType.EAGER)
     @Cascade(CascadeType.SAVE_UPDATE)
-    private List<WorkEntity> responsibleFor;
+    private List<WorkEntity> responsibleFor = new ArrayList<>();
 
     @OneToMany(mappedBy = "updatedBy", fetch = FetchType.EAGER)
     @Cascade(CascadeType.SAVE_UPDATE)
-    private List<VehicleEntity> updatedVehicles;
+    private List<VehicleEntity> updatedVehicles = new ArrayList<>();
 
     @OneToMany(mappedBy = "updatedBy", fetch = FetchType.EAGER)
     @Cascade(CascadeType.SAVE_UPDATE)
-    private List<WorkEntity> updatedWorks;
+    private List<WorkEntity> updatedWorks = new ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities()
