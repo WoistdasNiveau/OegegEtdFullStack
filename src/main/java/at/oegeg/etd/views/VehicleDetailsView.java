@@ -2,6 +2,7 @@ package at.oegeg.etd.views;
 
 import at.oegeg.etd.DataTransferObjects.DisplayModels.VehicleDisplay;
 import at.oegeg.etd.DataTransferObjects.DisplayModels.WorkDisplay;
+import at.oegeg.etd.Services.Implementations.UserService;
 import at.oegeg.etd.Services.Implementations.VehicleService;
 import at.oegeg.etd.Services.Implementations.WorkService;
 import at.oegeg.etd.Repositories.IUserEntityRepository;
@@ -25,6 +26,7 @@ import jakarta.annotation.security.RolesAllowed;
 
 import java.io.ByteArrayInputStream;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 
 import static at.oegeg.etd.Security.SecurityService.GetAuthorities;
@@ -51,7 +53,7 @@ public class VehicleDetailsView extends VerticalLayout implements HasUrlParamete
 
 
     // == constructor ==
-    public VehicleDetailsView(VehicleService vehicleService, IUserEntityRepository userEntityRepository, WorkService workService)
+    public VehicleDetailsView(VehicleService vehicleService, UserService userEntityRepository, WorkService workService)
     {
         this._vehicleService = vehicleService;
         this._workService = workService;
@@ -76,6 +78,8 @@ public class VehicleDetailsView extends VerticalLayout implements HasUrlParamete
             ReloadGrids("");
 
             VehicleDisplay vehicle = _vehicleService.FindVehicleByIdentifier(identifier);
+            long i = (long)_vehicleService.GetWorkCount(identifier);
+            vehicle.setWorkCount(i);
             byte[] pdf = _vehicleService.DownloadVehiclePdf(identifier);
 
             StreamResource resource = new StreamResource(vehicle.getNumber() + ".pdf", () -> new ByteArrayInputStream(pdf));
@@ -176,7 +180,9 @@ public class VehicleDetailsView extends VerticalLayout implements HasUrlParamete
 
     private void ReloadGrids(String filter)
     {
-        vehicleGrid.setItems(_vehicleService.FindVehicleByIdentifier(identifier));
+        VehicleDisplay vehicles = _vehicleService.FindVehicleByIdentifier(identifier);
+        vehicles.setWorkCount(_vehicleService.GetWorkCount(identifier));
+        vehicleGrid.setItems(vehicles);
         workGrid.setItems(_workService.FindAllByVehicle(identifier, filter));
     }
 

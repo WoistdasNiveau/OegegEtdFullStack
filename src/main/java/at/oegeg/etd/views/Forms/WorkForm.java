@@ -1,9 +1,11 @@
 package at.oegeg.etd.views.Forms;
 
+import at.oegeg.etd.DataTransferObjects.DisplayModels.UserDisplay;
 import at.oegeg.etd.DataTransferObjects.DisplayModels.WorkDisplay;
 import at.oegeg.etd.Entities.Enums.Priorities;
 import at.oegeg.etd.Entities.UserEntity;
 import at.oegeg.etd.Repositories.IUserEntityRepository;
+import at.oegeg.etd.Services.Implementations.UserService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -38,13 +40,13 @@ public class WorkForm extends FormLayout
     Button cancelButton = new Button();
 
     // == private fields ==
-    private final IUserEntityRepository _userRepository;
+    private final UserService _userService;
     private WorkDisplay selectedWork;
 
     // == constructor ==
-    public WorkForm(IUserEntityRepository userRepository)
+    public WorkForm(UserService userRepository)
     {
-        _userRepository = userRepository;
+        _userService = userRepository;
 
         binder.forField(description)
                 .asRequired()
@@ -56,7 +58,8 @@ public class WorkForm extends FormLayout
         priority.addValueChangeListener(t -> SaveEnabled());
         responsiblePerson.addValueChangeListener(t -> SaveEnabled());
 
-        UpdateUsers();
+        UpdateUsers("");
+        ConfigureResponsiblePerson();
         ConfigurePriorities();
         description.setLabel("Description");
 
@@ -108,9 +111,15 @@ public class WorkForm extends FormLayout
             ex.printStackTrace();
         }
     }
-    private void UpdateUsers()
+
+    private void ConfigureResponsiblePerson()
     {
-        responsiblePerson.setItems(_userRepository.findAll().stream().map(m -> m.getName()).collect(Collectors.toList()));
+        responsiblePerson.addValueChangeListener(t -> UpdateUsers(t.getValue()));
+    }
+
+    private void UpdateUsers(String name)
+    {
+        responsiblePerson.setItems(_userService.GetAllEnabledUsers(name).stream().map(UserDisplay::getName).collect(Collectors.toList()));
     }
 
     private void ConfigurePriorities()

@@ -12,7 +12,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -64,7 +63,7 @@ public class VehicleRepositoryTest
         UserEntity user1 = UserEntity.builder()
                 .name("user1")
                 .identifier(UUID.randomUUID().toString())
-                .IsUserEnabled(true)
+                .isUserEnabled(true)
                 .password("p")
                 .email("mail")
                 .build();
@@ -73,7 +72,7 @@ public class VehicleRepositoryTest
         UserEntity user2 = UserEntity.builder()
                 .name("user2")
                 .identifier(UUID.randomUUID().toString())
-                .IsUserEnabled(true)
+                .isUserEnabled(true)
                 .password("p")
                 .email("mail2")
                 .build();

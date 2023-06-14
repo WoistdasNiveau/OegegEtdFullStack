@@ -6,6 +6,7 @@ import jakarta.persistence.PrePersist;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.security.core.userdetails.User;
 
 import java.util.List;
@@ -41,6 +42,7 @@ public interface IVehicleRepository extends JpaRepository<VehicleEntity, Long>
             "e.updatedBy = :createdBy")
     List<VehicleEntity> findBySearchStringAndUpdatedBy(String searchString, UserEntity createdBy);
 
-
+    @Query("SELECT COUNT(c) FROM WorkEntity c WHERE c.vehicle.identifier = :parentIdentifier")
+    long countByVehicleEntity(String parentIdentifier);
 
 }

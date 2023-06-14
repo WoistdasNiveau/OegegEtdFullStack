@@ -4,6 +4,7 @@ import at.oegeg.etd.Entities.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -24,5 +25,14 @@ public interface IUserEntityRepository extends JpaRepository<UserEntity, Long>
             "LOWER(e.password) LIKE LOWER(concat('%', :searchString, '%'))")
     List<UserEntity> findAllBySearchString(String searchString);
 
+    List<UserEntity> findAllByIsUserEnabledTrue();
 
+    @Query("SELECT e FROM UserEntity e WHERE " +
+            "(e.isUserEnabled = true) AND " +
+            "(LOWER(e.identifier) LIKE LOWER(concat('%', :searchString, '%')) OR " +
+            "LOWER(e.name) LIKE LOWER(concat('%', :searchString, '%')) OR " +
+            "LOWER(e.email) LIKE LOWER(concat('%', :searchString, '%')) OR " +
+            "LOWER(e.telephoneNumber) LIKE LOWER(concat('%', :searchString, '%')) OR " +
+            "LOWER(e.password) LIKE LOWER(concat('%', :searchString, '%')))")
+    List<UserEntity> findAllByIsUserEnabledTrueAndSearchString(String searchString);
 }

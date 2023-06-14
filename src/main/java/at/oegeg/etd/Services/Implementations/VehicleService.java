@@ -10,6 +10,7 @@ import at.oegeg.etd.Repositories.IUserEntityRepository;
 import at.oegeg.etd.Repositories.IVehicleRepository;
 import at.oegeg.etd.Repositories.IWorkRepository;
 import com.itextpdf.text.DocumentException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -84,11 +85,14 @@ public class VehicleService
         return _vehicleRepository.count();
     }
 
+    @Transactional
     public void DeleteVehicle(String identifier)
     {
         VehicleEntity vehicle = _vehicleRepository.findByIdentifier(identifier).orElseThrow();
+        vehicle.getWorks().forEach(t -> t.setVehicle(null));
         vehicle.getWorks().clear();
         vehicle.getCreatedBy().getCreatedVehicles().remove(vehicle);
+        vehicle.setCreatedBy(null);
         if(vehicle.getUpdatedBy() != null)
         {
             vehicle.getUpdatedBy().getUpdatedVehicles().remove(vehicle);
@@ -120,6 +124,10 @@ public class VehicleService
         _vehicleRepository.save(entity);
     }
 
+    public long GetWorkCount(String vehicleIdentifier)
+    {
+        return _vehicleRepository.countByVehicleEntity(vehicleIdentifier);
+    }
     // == private methods ==
     private VehicleEntity VehicleDisplayToEntity(VehicleDisplay display)
     {

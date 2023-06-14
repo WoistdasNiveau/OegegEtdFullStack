@@ -38,7 +38,7 @@ public class VehicleEntity
     private Priorities priority;
 
     @Transient
-    @Formula("(SELECT COUNT(*) FROM WorkEntity ce WHERE ce.vehicle.id = id)")
+    @Formula("(SELECT COUNT(*) FROM WorkEntity ce WHERE ce.vehicle.identifier = identifier)")
     private Long workCount;
 
     @OneToMany(mappedBy="vehicle", fetch = FetchType.EAGER, orphanRemoval = true)
@@ -65,5 +65,6 @@ public class VehicleEntity
         {
             works.clear();
         }
+
     }
 }

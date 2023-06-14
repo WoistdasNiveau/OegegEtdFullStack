@@ -2,6 +2,7 @@ package at.oegeg.etd.views;
 
 import at.oegeg.etd.DataTransferObjects.DisplayModels.VehicleDisplay;
 import at.oegeg.etd.Services.Implementations.VehicleService;
+import at.oegeg.etd.Services.Implementations.WorkService;
 import at.oegeg.etd.views.Forms.VehicleForm;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
@@ -19,6 +20,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import jakarta.annotation.security.RolesAllowed;
 
+import java.util.List;
 import java.util.Objects;
 
 import static at.oegeg.etd.Security.SecurityService.GetAuthorities;
@@ -38,10 +40,12 @@ public class VehiclesView extends VerticalLayout
 
     // == private fields ==
     private final VehicleService _vehicleService;
+    private final WorkService _workService;
 
-    public VehiclesView(VehicleService vehicleService)
+    public VehiclesView(VehicleService vehicleService, WorkService workService)
     {
         _vehicleService = vehicleService;
+        _workService = workService;
         addClassName("list-view");
         setSizeFull();
 
@@ -73,7 +77,9 @@ public class VehiclesView extends VerticalLayout
 
     private void UpdateVehicleList()
     {
-        vehicleGrid.setItems(_vehicleService.FindAllVehicles(filterText.getValue()));
+        List<VehicleDisplay> displays = _vehicleService.FindAllVehicles(filterText.getValue());
+        displays.forEach(t -> t.setWorkCount(_vehicleService.GetWorkCount(t.getIdentifier())));
+        vehicleGrid.setItems(displays);
     }
 
     private Component getContent()

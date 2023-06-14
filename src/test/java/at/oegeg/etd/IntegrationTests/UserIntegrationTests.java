@@ -6,13 +6,9 @@ import at.oegeg.etd.Entities.Enums.Role;
 import at.oegeg.etd.Entities.UserEntity;
 import at.oegeg.etd.Repositories.IUserEntityRepository;
 import at.oegeg.etd.Services.Implementations.UserService;
-import com.icegreen.greenmail.configuration.GreenMailConfiguration;
-import com.icegreen.greenmail.junit5.GreenMailExtension;
-import com.icegreen.greenmail.util.ServerSetupTest;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
@@ -56,7 +52,7 @@ public class UserIntegrationTests
                 .email("test")
                 .telephoneNumber("test")
                 .password("Passwort")
-                .IsUserEnabled(true)
+                .isUserEnabled(true)
                 .role(Role.ADMIN)
                 .createdVehicles(new ArrayList<>())
                 .createdWorks(new ArrayList<>())
@@ -84,7 +80,7 @@ public class UserIntegrationTests
                 .build();
         userService.SaveUser(display);
         UserEntity user = userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier("test1").orElseThrow();
-        user.setIsUserEnabled(true);
+        user.setUserEnabled(true);
         userRepository.save(user);
 
         UserDisplay result = userService.FindByIdentifier(user.getIdentifier());
@@ -104,7 +100,7 @@ public class UserIntegrationTests
                 .email("noName")
                 .telephoneNumber("noName")
                 .password("Passwort")
-                .IsUserEnabled(true)
+                .isUserEnabled(true)
                 .role(Role.ADMIN)
                 .createdVehicles(new ArrayList<>())
                 .createdWorks(new ArrayList<>())
@@ -144,7 +140,7 @@ public class UserIntegrationTests
                 .email("noName")
                 .telephoneNumber("noName")
                 .password("Passwort")
-                .IsUserEnabled(false)
+                .isUserEnabled(false)
                 .role(Role.ADMIN)
                 .createdVehicles(new ArrayList<>())
                 .createdWorks(new ArrayList<>())

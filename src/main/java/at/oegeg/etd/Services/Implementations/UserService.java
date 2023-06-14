@@ -39,6 +39,21 @@ public class UserService
         return UserEntitiesToDisplays(entities);
     }
 
+    public List<UserDisplay> GetAllEnabledUsers(String name)
+    {
+        List<UserEntity> entities;
+        if(name == null || name.equals(""))
+        {
+            entities = _userRepository.findAllByIsUserEnabledTrue();
+        }
+        else
+        {
+            entities = _userRepository.findAllByIsUserEnabledTrueAndSearchString(name);
+        }
+        entities.removeIf(t -> t.getName().equals("-"));
+        return UserEntitiesToDisplays(entities);
+    }
+
     public void SaveUser(UserDisplay userDisplay)
     {
         UserEntity user;
@@ -73,13 +88,14 @@ public class UserService
     public void DeleteUser(String identifier)
     {
         UserEntity user = _userRepository.findByIdentifier(identifier).orElseThrow();
-        _userRepository.delete(user);
+        user.setUserEnabled(false);
+        _userRepository.save(user);
     }
 
     public void SetInitialPassword(String identifier, String password)
     {
         UserEntity user = _userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier(identifier).orElseThrow();
-        user.setIsUserEnabled(true);
+        user.setUserEnabled(true);
         user.setPassword(_passwordEncoder.encode(password));
         _userRepository.save(user);
 
@@ -131,7 +147,7 @@ public class UserService
                     .name("Oliver Stöckl")
                     .email("oliver01@kabsi.at")
                     .password(_passwordEncoder.encode("Passwort"))
-                    .IsUserEnabled(true)
+                    .isUserEnabled(true)
                     .role(Role.ADMIN)
                     .build());
         }
@@ -141,7 +157,7 @@ public class UserService
                     .identifier("defaultUser")
                     .name("-")
                     .password(UUID.randomUUID().toString())
-                    .IsUserEnabled(false)
+                    .isUserEnabled(false)
                     .build());
         }
         //if(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier("User").isEmpty())

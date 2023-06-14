@@ -20,6 +20,7 @@ public interface IWorkRepository extends JpaRepository<WorkEntity, Long>
 
     Optional<List<WorkEntity>> findByVehicle(VehicleEntity vehicle);
 
+
     @Query("SELECT e FROM WorkEntity e " +
             "WHERE e.createdBy = :createdBy " +
             "AND (LOWER(e.identifier) LIKE LOWER(concat('%', :searchString, '%')) OR " +

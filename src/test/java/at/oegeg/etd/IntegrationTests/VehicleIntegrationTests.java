@@ -54,7 +54,7 @@ public class VehicleIntegrationTests
                 .email("test")
                 .telephoneNumber("test")
                 .password("Passwort")
-                .IsUserEnabled(true)
+                .isUserEnabled(true)
                 .role(Role.ADMIN)
                 .createdVehicles(new ArrayList<>())
                 .createdWorks(new ArrayList<>())

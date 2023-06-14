@@ -1,21 +1,14 @@
 package at.oegeg.etd.Repositories;
 
-import at.oegeg.etd.Application;
 import at.oegeg.etd.Entities.UserEntity;
 import jakarta.annotation.Resource;
-import jakarta.transaction.Transactional;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.BootstrapWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import java.util.List;
 import java.util.UUID;
@@ -36,7 +29,7 @@ public class UserEntityRepositoryTests
         _userEntityRepository.save(UserEntity.builder()
                 .identifier(identifier)
                 .name("test")
-                .IsUserEnabled(true)
+                .isUserEnabled(true)
                 .email("mail")
                 .password("password")
                 .build());
@@ -54,21 +47,21 @@ public class UserEntityRepositoryTests
         _userEntityRepository.save(UserEntity.builder()
                 .identifier(UUID.randomUUID().toString())
                 .name("test1")
-                .IsUserEnabled(true)
+                .isUserEnabled(true)
                 .email("mail1")
                 .password("password")
                 .build());
         _userEntityRepository.save(UserEntity.builder()
                 .identifier(UUID.randomUUID().toString())
                 .name("test2")
-                .IsUserEnabled(true)
+                .isUserEnabled(true)
                 .email("mail2")
                 .password("password")
                 .build());
         _userEntityRepository.save(UserEntity.builder()
                 .identifier(UUID.randomUUID().toString())
                 .name("hi")
-                .IsUserEnabled(true)
+                .isUserEnabled(true)
                 .email("mail3")
                 .password("password")
                 .build());

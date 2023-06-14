@@ -10,6 +10,7 @@ import at.oegeg.etd.Services.Implementations.WorkService;
 import at.oegeg.etd.views.Forms.UserForm;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -53,6 +54,7 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
     Grid<WorkDisplay> responsibleForGrid = new Grid<>(WorkDisplay.class, false);
     Grid<WorkDisplay> createdWorksGrid = new Grid<>(WorkDisplay.class, false);
     Grid<WorkDisplay> updatedWorksGrid = new Grid<>(WorkDisplay.class, false);
+    Button deleteButton = new Button("Delete User");
 
     UserForm userForm;
 
@@ -87,18 +89,20 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
 
 
 
-        if(!SecurityContextHolder.getContext().getAuthentication().getName().equals(userIdentifier) || !Objects.requireNonNull(GetAuthorities()).contains("ADMIN"))
+        if(!SecurityContextHolder.getContext().getAuthentication().getName().equals(userIdentifier) || !Objects.requireNonNull(GetAuthorities()).contains("ROLE_ADMIN"))
         {
             UI.getCurrent().getPage().setLocation("");
         }
 
-        if(!GetAuthorities().contains("ADMIN"))
+        if(!GetAuthorities().contains("ROLE_ADMIN"))
         {
             resendButton.setVisible(false);
             resendButton.setEnabled(false);
         }
 
+
         ConfigureResendButton();
+        ConfigureDeleteButton();
         ConfigureUserForm();
         ConfigureGrids();
         ConfigureTextFields();
@@ -109,9 +113,27 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
     }
 
     // == private methods ==
+
+    private void ConfigureDeleteButton()
+    {
+        deleteButton.setVisible(!SecurityContextHolder.getContext().getAuthentication().getName().equals(userIdentifier) &&
+                Objects.requireNonNull(GetAuthorities()).contains("ROLE_ADMIN"));
+        deleteButton.setEnabled(!SecurityContextHolder.getContext().getAuthentication().getName().equals(userIdentifier) &&
+                Objects.requireNonNull(GetAuthorities()).contains("ROLE_ADMIN"));
+
+        deleteButton.addClickListener(t -> DeleteUser());
+        deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
+    }
+
+    private void DeleteUser()
+    {
+        _userService.DeleteUser(userIdentifier);
+        UI.getCurrent().navigate("users");
+    }
+
     private void SetContent()
     {
-        HorizontalLayout userToolBar = new HorizontalLayout(userTilte, resendButton);
+        HorizontalLayout userToolBar = new HorizontalLayout(userTilte, resendButton, deleteButton);
 
         HorizontalLayout responsibleForToolbar = new HorizontalLayout(responsibleForTitle, responsibleForField);
         VerticalLayout responsibleForView = new VerticalLayout(responsibleForToolbar, responsibleForGrid);

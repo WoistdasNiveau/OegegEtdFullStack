@@ -1,13 +1,11 @@
 package at.oegeg.etd.IntegrationTests;
 
 import at.oegeg.etd.Configs.TestConfig;
-import at.oegeg.etd.DataTransferObjects.DisplayModels.UserDisplay;
 import at.oegeg.etd.DataTransferObjects.DisplayModels.VehicleDisplay;
 import at.oegeg.etd.DataTransferObjects.DisplayModels.WorkDisplay;
 import at.oegeg.etd.Entities.Enums.Role;
 import at.oegeg.etd.Entities.UserEntity;
 import at.oegeg.etd.Entities.VehicleEntity;
-import at.oegeg.etd.Entities.WorkEntity;
 import at.oegeg.etd.Repositories.IUserEntityRepository;
 import at.oegeg.etd.Repositories.IVehicleRepository;
 import at.oegeg.etd.Repositories.IWorkRepository;
@@ -61,7 +59,7 @@ public class WorkIntegrationTests
                 .email("test")
                 .telephoneNumber("test")
                 .password("Passwort")
-                .IsUserEnabled(true)
+                .isUserEnabled(true)
                 .role(Role.ADMIN)
                 .createdWorks(new ArrayList<>())
                 .createdVehicles(new ArrayList<>())

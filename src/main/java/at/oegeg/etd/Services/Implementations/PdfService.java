@@ -115,6 +115,27 @@ public class PdfService
                 descriptionCell = new PdfPCell(new Phrase(work.getDescription()));
                 priorityCell = new PdfPCell(new Phrase(work.getPriority().toString()));
             }
+            switch (work.getPriority())
+            {
+                case LOW ->
+                {
+                    personCell.setBackgroundColor(new BaseColor(24,132,68));
+                    descriptionCell.setBackgroundColor(new BaseColor(24,132,68));
+                    priorityCell.setBackgroundColor(new BaseColor(24,132,68));
+                }
+                case MEDIUM ->
+                {
+                    personCell.setBackgroundColor(new BaseColor(8,108,244));
+                    descriptionCell.setBackgroundColor(new BaseColor(8,108,244));
+                    priorityCell.setBackgroundColor(new BaseColor(8,108,244));
+                }
+                case HIGH ->
+                {
+                    personCell.setBackgroundColor(new BaseColor(232,28,20));
+                    descriptionCell.setBackgroundColor(new BaseColor(232,28,20));
+                    priorityCell.setBackgroundColor(new BaseColor(232,28,20));
+                }
+            }
             table.addCell(personCell);
             table.addCell(descriptionCell);
             table.addCell(priorityCell);

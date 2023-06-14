@@ -1,14 +1,11 @@
 package at.oegeg.etd.Entities;
 
 import at.oegeg.etd.Entities.Enums.Role;
-import jakarta.annotation.PostConstruct;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -38,7 +35,7 @@ public class UserEntity implements UserDetails
     private String telephoneNumber;
     @NotBlank
     private String password;
-    private boolean IsUserEnabled = false;
+    private boolean isUserEnabled = false;
     private Role role;
 
     @OneToMany(mappedBy = "createdBy", fetch = FetchType.EAGER)
@@ -94,7 +91,7 @@ public class UserEntity implements UserDetails
     @Override
     public boolean isEnabled()
     {
-        return IsUserEnabled;
+        return isUserEnabled;
     }
 
     @Override
