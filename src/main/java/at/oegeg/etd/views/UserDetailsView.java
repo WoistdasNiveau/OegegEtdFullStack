@@ -87,14 +87,12 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
             userIdentifier = s;
         }
 
-
-
         if(!SecurityContextHolder.getContext().getAuthentication().getName().equals(userIdentifier) || !Objects.requireNonNull(GetAuthorities()).contains("ROLE_ADMIN"))
         {
             UI.getCurrent().getPage().setLocation("");
         }
 
-        if(!GetAuthorities().contains("ROLE_ADMIN"))
+        if(!GetAuthorities().contains("ROLE_ADMIN") && !_userService.FindByIdentifier(userIdentifier).isEnabled())
         {
             resendButton.setVisible(false);
             resendButton.setEnabled(false);
@@ -106,7 +104,7 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
         ConfigureUserForm();
         ConfigureGrids();
         ConfigureTextFields();
-        userReload();
+        UserReload();
         ReloadAll();
 
         SetContent();
@@ -162,7 +160,7 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
         );
     }
 
-    private void userReload()
+    private void UserReload()
     {
         userGrid.setItems(_userService.FindByIdentifier(userIdentifier));
     }
@@ -193,7 +191,7 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
 
     private void ReloadAll()
     {
-        userReload();
+        UserReload();
         responibleGridReload("");
         createdWorksGridReload("");
         updatedWorksGridReload("");
@@ -336,7 +334,7 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
         responsibleForGrid.addColumn(CreatePrioritiesRenderer()).setHeader("Priority").setSortable(true).setTextAlign(ColumnTextAlign.CENTER)
                 .setComparator(Comparator.comparingInt(p -> p.getPriority().ordinal()));
 
-        responsibleForGrid.asSingleSelect().addValueChangeListener( t -> UI.getCurrent().getPage().setLocation("vehicle/" + t.getValue().getVehicleIdentifier()));
+        responsibleForGrid.asSingleSelect().addValueChangeListener( t -> UI.getCurrent().navigate("vehicle/" + t.getValue().getVehicleIdentifier()));
         responsibleForGrid.setHeight("400px");
 
 
@@ -352,7 +350,7 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
         createdWorksGrid.addColumn(CreatePrioritiesRenderer()).setHeader("Priority").setSortable(true).setTextAlign(ColumnTextAlign.CENTER)
                 .setComparator(Comparator.comparingInt(p -> p.getPriority().ordinal()));
 
-        createdWorksGrid.asSingleSelect().addValueChangeListener( t -> UI.getCurrent().getPage().setLocation("vehicle/" + t.getValue().getVehicleIdentifier()));
+        createdWorksGrid.asSingleSelect().addValueChangeListener( t -> UI.getCurrent().navigate("vehicle/" + t.getValue().getVehicleIdentifier()));
         createdWorksGrid.setHeight("400px");
 
 
@@ -368,7 +366,7 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
         updatedWorksGrid.addColumn(CreatePrioritiesRenderer()).setHeader("Priority").setSortable(true).setTextAlign(ColumnTextAlign.CENTER)
                 .setComparator(Comparator.comparingInt(p -> p.getPriority().ordinal()));
 
-        updatedWorksGrid.asSingleSelect().addValueChangeListener( t -> UI.getCurrent().getPage().setLocation("vehicle/" + t.getValue().getVehicleIdentifier()));
+        updatedWorksGrid.asSingleSelect().addValueChangeListener( t -> UI.getCurrent().navigate("vehicle/" + t.getValue().getVehicleIdentifier()));
         updatedWorksGrid.setHeight("400px");
 
 
@@ -396,7 +394,7 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
         updatedVehiclesGrid.addColumn(VehicleDisplay::getStand).setHeader("Stand").setSortable(true).setTextAlign(ColumnTextAlign.CENTER);
         updatedVehiclesGrid.addColumn(VehicleDisplay::getWorkCount).setHeader("Works").setSortable(true).setTextAlign(ColumnTextAlign.CENTER);
 
-        updatedVehiclesGrid.asSingleSelect().addValueChangeListener( t -> UI.getCurrent().getPage().setLocation("vehicle/" + t.getValue().getIdentifier()));
+        updatedVehiclesGrid.asSingleSelect().addValueChangeListener( t -> UI.getCurrent().navigate("vehicle/" + t.getValue().getIdentifier()));
         updatedVehiclesGrid.setHeight("400px");
     }
 

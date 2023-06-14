@@ -56,9 +56,7 @@ public class WorkForm extends FormLayout
 
         description.addValueChangeListener(t -> SaveEnabled());
         priority.addValueChangeListener(t -> SaveEnabled());
-        responsiblePerson.addValueChangeListener(t -> SaveEnabled());
 
-        UpdateUsers("");
         ConfigureResponsiblePerson();
         ConfigurePriorities();
         description.setLabel("Description");
@@ -114,13 +112,10 @@ public class WorkForm extends FormLayout
 
     private void ConfigureResponsiblePerson()
     {
-        responsiblePerson.addValueChangeListener(t -> UpdateUsers(t.getValue()));
+        responsiblePerson.setItems(_userService.GetAllEnabledUsers().stream().map(UserDisplay::getName).collect(Collectors.toList()));
+        responsiblePerson.addValueChangeListener(t -> SaveEnabled());
     }
 
-    private void UpdateUsers(String name)
-    {
-        responsiblePerson.setItems(_userService.GetAllEnabledUsers(name).stream().map(UserDisplay::getName).collect(Collectors.toList()));
-    }
 
     private void ConfigurePriorities()
     {

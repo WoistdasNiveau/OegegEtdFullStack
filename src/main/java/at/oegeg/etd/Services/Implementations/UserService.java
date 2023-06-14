@@ -39,17 +39,10 @@ public class UserService
         return UserEntitiesToDisplays(entities);
     }
 
-    public List<UserDisplay> GetAllEnabledUsers(String name)
+    public List<UserDisplay> GetAllEnabledUsers()
     {
         List<UserEntity> entities;
-        if(name == null || name.equals(""))
-        {
-            entities = _userRepository.findAllByIsUserEnabledTrue();
-        }
-        else
-        {
-            entities = _userRepository.findAllByIsUserEnabledTrueAndSearchString(name);
-        }
+            entities = _userRepository.findAllByIsUserEnabledTrueAndSearchString();
         entities.removeIf(t -> t.getName().equals("-"));
         return UserEntitiesToDisplays(entities);
     }

@@ -18,7 +18,10 @@ import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.validator.EmailValidator;
+import com.vaadin.flow.data.validator.RegexpValidator;
 import com.vaadin.flow.shared.Registration;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.regex.Pattern;
 
@@ -95,14 +98,10 @@ public class UserForm extends FormLayout
         String emailRegex = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
         Pattern emailPattern = Pattern.compile(emailRegex);
 
-        String phoneRegex = "^[0-9]{10}$";
-        Pattern phonePattern = Pattern.compile(phoneRegex);
-
         boolean nameValid = !nameField.isEmpty();
         boolean emailValid = !emailField.isEmpty() && emailPattern.matcher(emailField.getValue()).matches();
-        boolean phoneValid = !telephoneField.isEmpty();
         boolean roleValid = !roleSelect.isEmpty();
-        saveButton.setEnabled(nameValid && emailValid && phoneValid && roleValid);
+        saveButton.setEnabled(nameValid && emailValid && roleValid);
     }
 
     private void ConfigureBinder()
@@ -112,6 +111,7 @@ public class UserForm extends FormLayout
                 .bind(UserDisplay::getName, UserDisplay::setName);
         binder.forField(emailField)
                 .asRequired()
+                .withValidator(new EmailValidator("Enter a valid email adress!"))
                 .bind(UserDisplay::getEmail, UserDisplay::setEmail);
         binder.forField(telephoneField)
                 .withConverter(new TelephoneNumberConverter())
@@ -126,6 +126,7 @@ public class UserForm extends FormLayout
         roleSelect.setRenderer(RoleRenderer());
         roleSelect.setItems(Role.values());
         roleSelect.setValue(Role.USER);
+        roleSelect.setEnabled(selectedUser == null || !SecurityContextHolder.getContext().getAuthentication().getName().equals(selectedUser.getIdentifier()));
     }
 
     private Component ConfigureButtonLayout()

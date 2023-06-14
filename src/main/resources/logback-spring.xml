@@ -7,6 +7,6 @@
    <!-- <logger name="org.springframework.security" level="TRACE" /> -->
     <logger name="org.hibernate.SQL" level="TRACE"/>
     <logger name="org.hibernate.type" level="TRACE"/>
-    <!--<logger name="com.vaadin" level="TRACE"/> -->
+    <logger name="com.vaadin" level="TRACE"/>
 
 </configuration>
