@@ -83,10 +83,11 @@ public class UserDetailsView extends VerticalLayout //implements HasUrlParameter
         sameUser = userIdentifier == SecurityContextHolder.getContext().getAuthentication().getName();
 
         authorities = GetAuthorities();
+        boolean isAdmin = authorities.contains("ROLE_ADMIN");
 
-        if(!sameUser || authorities.contains("ROLE_ADMIN"))
+        if (!(sameUser || isAdmin))
         {
-            UI.getCurrent().getPage().setLocation("");
+            UI.getCurrent().getPage().setLocation("/");
         }
 
         if(!authorities.contains("ROLE_ADMIN") && !user.isEnabled())
