@@ -26,8 +26,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Comparator;
 
-import static at.oegeg.etd.views.CustomRenderer.CreatePrioritiesRenderer;
-import static at.oegeg.etd.views.CustomRenderer.RoleGridRenderer;
+import static at.oegeg.etd.views.Renderers.BadgeRenderer.CreatePrioritiesRenderer;
+import static at.oegeg.etd.views.Renderers.BadgeRenderer.RoleGridRenderer;
 
 @PageTitle("Profile | OegegEtd")
 @Route(value = "profile", layout = MainLayout.class)

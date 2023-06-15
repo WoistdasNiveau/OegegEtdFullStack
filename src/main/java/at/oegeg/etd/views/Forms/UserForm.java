@@ -19,13 +19,12 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.validator.EmailValidator;
-import com.vaadin.flow.data.validator.RegexpValidator;
 import com.vaadin.flow.shared.Registration;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.regex.Pattern;
 
-import static at.oegeg.etd.views.CustomRenderer.RoleRenderer;
+import static at.oegeg.etd.views.Renderers.BadgeRenderer.RoleRenderer;
 
 public class UserForm extends FormLayout
 {

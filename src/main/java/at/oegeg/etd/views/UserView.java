@@ -23,7 +23,8 @@ import java.util.Comparator;
 import java.util.Objects;
 
 import static at.oegeg.etd.Security.SecurityService.GetAuthorities;
-import static at.oegeg.etd.views.CustomRenderer.RoleGridRenderer;
+import static at.oegeg.etd.views.Renderers.BadgeRenderer.RoleGridRenderer;
+import static at.oegeg.etd.views.Renderers.IsEnabledRenderer.EnabledRenderer;
 
 @PageTitle("User | OegegEtd")
 @Route(value = "users", layout = MainLayout.class)
@@ -88,7 +89,7 @@ public class UserView extends VerticalLayout
         userGrid.addColumn(RoleGridRenderer()).setHeader("Role").setTextAlign(ColumnTextAlign.CENTER).setSortable(true)
                 .setComparator(Comparator.comparingInt(p -> p.getRole().ordinal()));
 
-        userGrid.addColumn(UserDisplay::isEnabled).setHeader("Enabled").setTextAlign(ColumnTextAlign.CENTER).setSortable(true);
+        userGrid.addColumn(EnabledRenderer()).setHeader("Enabled").setTextAlign(ColumnTextAlign.CENTER).setSortable(true);
 
         userGrid.addColumn(UserDisplay::getResponsibleFor).setHeader("Responsible For").setTextAlign(ColumnTextAlign.CENTER).setSortable(true)
                 .setComparator(Comparator.comparingLong(UserDisplay::getResponsibleFor));
@@ -116,7 +117,7 @@ public class UserView extends VerticalLayout
     private void NavigateToDetails(String token)
     {
         _userState.setIdentifier(token);
-        UI.getCurrent().getPage().setLocation("user");
+        UI.getCurrent().getPage().setLocation("user/" + token);
     }
 
     private void ConfigureTextField()

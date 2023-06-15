@@ -8,7 +8,7 @@ import at.oegeg.etd.Services.Implementations.UserService;
 import at.oegeg.etd.Services.Implementations.VehicleService;
 import at.oegeg.etd.Services.Implementations.WorkService;
 import at.oegeg.etd.views.Forms.UserForm;
-import at.oegeg.etd.views.States.UserState;
+import at.oegeg.etd.views.Renderers.IsEnabledRenderer;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -26,16 +26,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 
 import static at.oegeg.etd.Security.SecurityService.GetAuthorities;
-import static at.oegeg.etd.views.CustomRenderer.CreatePrioritiesRenderer;
-import static at.oegeg.etd.views.CustomRenderer.RoleGridRenderer;
+import static at.oegeg.etd.views.Renderers.BadgeRenderer.CreatePrioritiesRenderer;
+import static at.oegeg.etd.views.Renderers.BadgeRenderer.RoleGridRenderer;
+import static at.oegeg.etd.views.Renderers.IsEnabledRenderer.EnabledRenderer;
 
 @PageTitle("User details | OegegEtd")
 @Route(value = "user", layout = MainLayout.class)
 @RolesAllowed({"ADMIN"})
-public class UserDetailsView extends VerticalLayout //implements HasUrlParameter<String>
+public class UserDetailsView extends VerticalLayout implements HasUrlParameter<String>
 {
     // == view fields ==
     H2 userTilte = new H2("User");
@@ -71,21 +71,34 @@ public class UserDetailsView extends VerticalLayout //implements HasUrlParameter
     private List<String> authorities;
 
     // == constructor ==
-    public UserDetailsView(UserState userState, UserService _userService, VehicleService _vehicleService, WorkService _workService, EmailSenderService emailSenderService)
+    public UserDetailsView(UserService _userService, VehicleService _vehicleService, WorkService _workService, EmailSenderService emailSenderService)
     {
         this._userService = _userService;
         this._vehicleService = _vehicleService;
         this._workService = _workService;
         this._emailSenderService = emailSenderService;
+    }
 
-        userIdentifier = userState.getIdentifier();
-        user = _userService.FindByIdentifier(userIdentifier);
-        sameUser = userIdentifier == SecurityContextHolder.getContext().getAuthentication().getName();
+    // == public methods ==
+    @Override
+    public void setParameter(BeforeEvent beforeEvent, String s)
+    {
+        if(s == null || s.equals(""))
+        {
+            userIdentifier = SecurityContextHolder.getContext().getAuthentication().getName();
+            user = _userService.FindByIdentifier(userIdentifier);
+            sameUser = true;
+        }
+        else
+        {
+            userIdentifier = s;
+            user = _userService.FindByIdentifier(userIdentifier);
+        }
+
 
         authorities = GetAuthorities();
-        boolean isAdmin = authorities.contains("ROLE_ADMIN");
 
-        if (!(sameUser || isAdmin))
+        if(!(sameUser || authorities.contains("ROLE_ADMIN")))
         {
             UI.getCurrent().getPage().setLocation("/");
         }
@@ -95,6 +108,7 @@ public class UserDetailsView extends VerticalLayout //implements HasUrlParameter
             resendButton.setVisible(false);
             resendButton.setEnabled(false);
         }
+
 
         ConfigureResendButton();
         ConfigureDeleteButton();
@@ -107,54 +121,12 @@ public class UserDetailsView extends VerticalLayout //implements HasUrlParameter
         SetContent();
     }
 
-    // == public methods ==
-    //@Override
-    //public void setParameter(BeforeEvent beforeEvent, String s)
-    //{
-    //    if(s == null || s.equals(""))
-    //    {
-    //        userIdentifier = SecurityContextHolder.getContext().getAuthentication().getName();
-    //        user = _userService.FindByIdentifier(userIdentifier);
-    //        sameUser = true;
-    //    }
-    //    else
-    //    {
-    //        userIdentifier = s;
-    //        user = _userService.FindByIdentifier(userIdentifier);
-    //    }
-//
-//
-    //    authorities = GetAuthorities();
-////
-    //    if(!sameUser || authorities.contains("ROLE_ADMIN"))
-    //    {
-    //        UI.getCurrent().getPage().setLocation("");
-    //    }
-////
-    //    if(!authorities.contains("ROLE_ADMIN") && !user.isEnabled())
-    //    {
-    //        resendButton.setVisible(false);
-    //        resendButton.setEnabled(false);
-    //    }
-////
-////
-    //    ConfigureResendButton();
-    //    ConfigureDeleteButton();
-    //    ConfigureUserForm();
-    //    ConfigureGrids();
-    //    ConfigureTextFields();
-    //    UserReload();
-    //    ReloadAll();
-////
-    //    SetContent();
-    //}
-
     // == private methods ==
 
     private void ConfigureDeleteButton()
     {
-        deleteButton.setVisible(!sameUser && authorities.contains("ROLE_ADMIN"));
-        deleteButton.setEnabled(!sameUser && authorities.contains("ROLE_ADMIN"));
+        deleteButton.setVisible(!sameUser && authorities.contains("ROLE_ADMIN") && user.isEnabled());
+        deleteButton.setEnabled(!sameUser && authorities.contains("ROLE_ADMIN") && user.isEnabled());
 
         deleteButton.addClickListener(t -> DeleteUser());
         deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
@@ -338,7 +310,7 @@ public class UserDetailsView extends VerticalLayout //implements HasUrlParameter
         userGrid.addColumn(RoleGridRenderer()).setHeader("Role").setTextAlign(ColumnTextAlign.CENTER).setSortable(true)
                 .setComparator(Comparator.comparingInt(p -> p.getRole().ordinal()));
 
-        userGrid.addColumn(UserDisplay::isEnabled).setHeader("Enabled").setTextAlign(ColumnTextAlign.CENTER).setSortable(true);
+        userGrid.addColumn(EnabledRenderer()).setHeader("Enabled").setTextAlign(ColumnTextAlign.CENTER).setSortable(true);
 
         userGrid.addColumn(UserDisplay::getResponsibleFor).setHeader("Responsible For").setTextAlign(ColumnTextAlign.CENTER).setSortable(true)
                 .setComparator(Comparator.comparingLong(UserDisplay::getResponsibleFor));

@@ -1,4 +1,4 @@
-package at.oegeg.etd.views;
+package at.oegeg.etd.views.Renderers;
 
 import at.oegeg.etd.DataTransferObjects.DisplayModels.UserDisplay;
 import at.oegeg.etd.DataTransferObjects.DisplayModels.WorkDisplay;
@@ -7,7 +7,7 @@ import at.oegeg.etd.Entities.Enums.Role;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 
-public class CustomRenderer
+public class BadgeRenderer
 {
     public static ComponentRenderer<Span, Role> RoleRenderer()
     {

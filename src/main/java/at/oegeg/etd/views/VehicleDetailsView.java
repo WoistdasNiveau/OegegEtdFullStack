@@ -5,7 +5,6 @@ import at.oegeg.etd.DataTransferObjects.DisplayModels.WorkDisplay;
 import at.oegeg.etd.Services.Implementations.UserService;
 import at.oegeg.etd.Services.Implementations.VehicleService;
 import at.oegeg.etd.Services.Implementations.WorkService;
-import at.oegeg.etd.Repositories.IUserEntityRepository;
 import at.oegeg.etd.views.Forms.VehicleForm;
 import at.oegeg.etd.views.Forms.WorkForm;
 import com.vaadin.flow.component.UI;
@@ -26,11 +25,10 @@ import jakarta.annotation.security.RolesAllowed;
 
 import java.io.ByteArrayInputStream;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Objects;
 
 import static at.oegeg.etd.Security.SecurityService.GetAuthorities;
-import static at.oegeg.etd.views.CustomRenderer.CreatePrioritiesRenderer;
+import static at.oegeg.etd.views.Renderers.BadgeRenderer.CreatePrioritiesRenderer;
 
 @PageTitle("Details | OegegEtd")
 @Route(value = "vehicle", layout = MainLayout.class)
@@ -49,7 +47,7 @@ public class VehicleDetailsView extends VerticalLayout implements HasUrlParamete
     VehicleForm vehicleForm;
     Button addWorkButton = new Button();
     Button downloadPdfButton = new Button("Download Pdf");
-    Anchor a;
+    Anchor downloadPdfAnchor;
 
 
     // == constructor ==
@@ -80,12 +78,12 @@ public class VehicleDetailsView extends VerticalLayout implements HasUrlParamete
             VehicleDisplay vehicle = _vehicleService.FindVehicleByIdentifier(identifier);
             long i = (long)_vehicleService.GetWorkCount(identifier);
             vehicle.setWorkCount(i);
-            byte[] pdf = _vehicleService.DownloadVehiclePdf(identifier);
-
-            StreamResource resource = new StreamResource(vehicle.getNumber() + ".pdf", () -> new ByteArrayInputStream(pdf));
-
-            a = new Anchor(resource, "Open pdf");
-            a.getElement().setAttribute("target", "_blank");
+            //byte[] pdf = _vehicleService.DownloadVehiclePdf(identifier);
+//
+            //StreamResource resource = new StreamResource(vehicle.getNumber() + ".pdf", () -> new ByteArrayInputStream(pdf));
+//
+            //downloadPdfAnchor = new Anchor(resource, "Open pdf");
+            //downloadPdfAnchor.getElement().setAttribute("target", "_blank");
         }
         catch (Exception ex)
         {
@@ -100,7 +98,7 @@ public class VehicleDetailsView extends VerticalLayout implements HasUrlParamete
 
         addWorkButton.setText("Add Work");
         addWorkButton.addClickListener(e -> AddWork());
-        HorizontalLayout toolbar = new HorizontalLayout(new H1("Works"),addWorkButton, a);
+        HorizontalLayout toolbar = new HorizontalLayout(new H1("Works"),addWorkButton, downloadPdfAnchor);
         toolbar.setDefaultVerticalComponentAlignment(Alignment.CENTER);
 
         VerticalLayout content1 = new VerticalLayout(new H1("Vehicle"), vehicleGrid,toolbar, workGrid);
@@ -135,8 +133,8 @@ public class VehicleDetailsView extends VerticalLayout implements HasUrlParamete
 
             StreamResource resource = new StreamResource(vehicle.getNumber() + ".pdf", () -> new ByteArrayInputStream(pdf));
 
-            Anchor a = new Anchor(resource, "Open pdf");
-            a.getElement().setAttribute("target", "_blank");
+            downloadPdfAnchor = new Anchor(resource, "Open pdf");
+            downloadPdfAnchor.getElement().setAttribute("target", "_blank");
         }
         catch (Exception ex)
         {
@@ -184,6 +182,7 @@ public class VehicleDetailsView extends VerticalLayout implements HasUrlParamete
         vehicles.setWorkCount(_vehicleService.GetWorkCount(identifier));
         vehicleGrid.setItems(vehicles);
         workGrid.setItems(_workService.FindAllByVehicle(identifier, filter));
+        DownloadVehiclePdf();
     }
 
     private void ConfigureVehicleForm()
