@@ -3,6 +3,7 @@ package at.oegeg.etd.views;
 import at.oegeg.etd.DataTransferObjects.DisplayModels.UserDisplay;
 import at.oegeg.etd.Services.Implementations.UserService;
 import at.oegeg.etd.views.Forms.UserForm;
+import at.oegeg.etd.views.States.UserState;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
@@ -25,7 +26,7 @@ import static at.oegeg.etd.Security.SecurityService.GetAuthorities;
 import static at.oegeg.etd.views.CustomRenderer.RoleGridRenderer;
 
 @PageTitle("User | OegegEtd")
-@Route(value = "user", layout = MainLayout.class)
+@Route(value = "users", layout = MainLayout.class)
 @RolesAllowed({"LEADER","ADMIN"})
 @Getter
 @Setter
@@ -39,11 +40,13 @@ public class UserView extends VerticalLayout
     private Button addUserButton = new Button("Add User");
     private Grid<UserDisplay> userGrid = new Grid<>(UserDisplay.class, false);
     private UserForm userForm;
+    private UserState _userState;
 
     // == constructor ==
-    public UserView(UserService userService)
+    public UserView(UserService userService, UserState state)
     {
         _userService = userService;
+        _userState = state;
 
         ConfigureGrid();
         ConfigureTextField();
@@ -112,7 +115,8 @@ public class UserView extends VerticalLayout
 
     private void NavigateToDetails(String token)
     {
-        UI.getCurrent().getPage().setLocation("user/" + token);
+        _userState.setIdentifier(token);
+        UI.getCurrent().getPage().setLocation("user");
     }
 
     private void ConfigureTextField()

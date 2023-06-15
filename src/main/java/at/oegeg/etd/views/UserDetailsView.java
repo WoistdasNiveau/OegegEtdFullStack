@@ -8,6 +8,7 @@ import at.oegeg.etd.Services.Implementations.UserService;
 import at.oegeg.etd.Services.Implementations.VehicleService;
 import at.oegeg.etd.Services.Implementations.WorkService;
 import at.oegeg.etd.views.Forms.UserForm;
+import at.oegeg.etd.views.States.UserState;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -24,6 +25,7 @@ import jakarta.annotation.security.RolesAllowed;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 
 import static at.oegeg.etd.Security.SecurityService.GetAuthorities;
@@ -32,8 +34,8 @@ import static at.oegeg.etd.views.CustomRenderer.RoleGridRenderer;
 
 @PageTitle("User details | OegegEtd")
 @Route(value = "user", layout = MainLayout.class)
-@RolesAllowed("ADMIN")
-public class UserDetailsView extends VerticalLayout implements HasUrlParameter<String>
+@RolesAllowed({"ADMIN"})
+public class UserDetailsView extends VerticalLayout //implements HasUrlParameter<String>
 {
     // == view fields ==
     H2 userTilte = new H2("User");
@@ -64,40 +66,34 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
     private final WorkService _workService;
     private final EmailSenderService _emailSenderService;
     private String userIdentifier;
+    private UserDisplay user;
+    private boolean sameUser = false;
+    private List<String> authorities;
 
     // == constructor ==
-    public UserDetailsView(UserService _userService, VehicleService _vehicleService, WorkService _workService, EmailSenderService emailSenderService)
+    public UserDetailsView(UserState userState, UserService _userService, VehicleService _vehicleService, WorkService _workService, EmailSenderService emailSenderService)
     {
         this._userService = _userService;
         this._vehicleService = _vehicleService;
         this._workService = _workService;
         this._emailSenderService = emailSenderService;
-    }
 
-    // == public methods ==
-    @Override
-    public void setParameter(BeforeEvent beforeEvent, String s)
-    {
-        if(s == null || s.equals(""))
-        {
-            userIdentifier = SecurityContextHolder.getContext().getAuthentication().getName();
-        }
-        else
-        {
-            userIdentifier = s;
-        }
+        userIdentifier = userState.getIdentifier();
+        user = _userService.FindByIdentifier(userIdentifier);
+        sameUser = userIdentifier == SecurityContextHolder.getContext().getAuthentication().getName();
 
-        if(!SecurityContextHolder.getContext().getAuthentication().getName().equals(userIdentifier) || !Objects.requireNonNull(GetAuthorities()).contains("ROLE_ADMIN"))
+        authorities = GetAuthorities();
+
+        if(!sameUser || authorities.contains("ROLE_ADMIN"))
         {
             UI.getCurrent().getPage().setLocation("");
         }
 
-        if(!GetAuthorities().contains("ROLE_ADMIN") && !_userService.FindByIdentifier(userIdentifier).isEnabled())
+        if(!authorities.contains("ROLE_ADMIN") && !user.isEnabled())
         {
             resendButton.setVisible(false);
             resendButton.setEnabled(false);
         }
-
 
         ConfigureResendButton();
         ConfigureDeleteButton();
@@ -110,14 +106,54 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
         SetContent();
     }
 
+    // == public methods ==
+    //@Override
+    //public void setParameter(BeforeEvent beforeEvent, String s)
+    //{
+    //    if(s == null || s.equals(""))
+    //    {
+    //        userIdentifier = SecurityContextHolder.getContext().getAuthentication().getName();
+    //        user = _userService.FindByIdentifier(userIdentifier);
+    //        sameUser = true;
+    //    }
+    //    else
+    //    {
+    //        userIdentifier = s;
+    //        user = _userService.FindByIdentifier(userIdentifier);
+    //    }
+//
+//
+    //    authorities = GetAuthorities();
+////
+    //    if(!sameUser || authorities.contains("ROLE_ADMIN"))
+    //    {
+    //        UI.getCurrent().getPage().setLocation("");
+    //    }
+////
+    //    if(!authorities.contains("ROLE_ADMIN") && !user.isEnabled())
+    //    {
+    //        resendButton.setVisible(false);
+    //        resendButton.setEnabled(false);
+    //    }
+////
+////
+    //    ConfigureResendButton();
+    //    ConfigureDeleteButton();
+    //    ConfigureUserForm();
+    //    ConfigureGrids();
+    //    ConfigureTextFields();
+    //    UserReload();
+    //    ReloadAll();
+////
+    //    SetContent();
+    //}
+
     // == private methods ==
 
     private void ConfigureDeleteButton()
     {
-        deleteButton.setVisible(!SecurityContextHolder.getContext().getAuthentication().getName().equals(userIdentifier) &&
-                Objects.requireNonNull(GetAuthorities()).contains("ROLE_ADMIN"));
-        deleteButton.setEnabled(!SecurityContextHolder.getContext().getAuthentication().getName().equals(userIdentifier) &&
-                Objects.requireNonNull(GetAuthorities()).contains("ROLE_ADMIN"));
+        deleteButton.setVisible(!sameUser && authorities.contains("ROLE_ADMIN"));
+        deleteButton.setEnabled(!sameUser && authorities.contains("ROLE_ADMIN"));
 
         deleteButton.addClickListener(t -> DeleteUser());
         deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
@@ -148,7 +184,8 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
         HorizontalLayout updatedVehiclesToolbar = new HorizontalLayout(updatedVehiclesTitle, updatedVehiclesField);
         VerticalLayout updatedVehiclesView = new VerticalLayout(updatedVehiclesToolbar, updatedVehiclesGrid);
 
-        VerticalLayout finalView = new VerticalLayout(userToolBar, userGrid, responsibleForView, createdWorksView, updatedWorksView, createdVehiclesView, updatedVehiclesView);
+        VerticalLayout finalView = new VerticalLayout(userToolBar, userGrid, responsibleForView, createdWorksView, updatedWorksView,
+                createdVehiclesView, updatedVehiclesView);
 
         finalView.setSizeFull();
         HorizontalLayout formView = new HorizontalLayout(finalView,userForm);
@@ -249,7 +286,6 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
 
     private void ConfigureResendButton()
     {
-        UserDisplay user = _userService.FindByIdentifier(userIdentifier);
         resendButton.setVisible(!user.isEnabled());
         resendButton.setEnabled(!user.isEnabled());
 
@@ -334,7 +370,7 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
         responsibleForGrid.addColumn(CreatePrioritiesRenderer()).setHeader("Priority").setSortable(true).setTextAlign(ColumnTextAlign.CENTER)
                 .setComparator(Comparator.comparingInt(p -> p.getPriority().ordinal()));
 
-        responsibleForGrid.asSingleSelect().addValueChangeListener( t -> UI.getCurrent().navigate("vehicle/" + t.getValue().getVehicleIdentifier()));
+        responsibleForGrid.asSingleSelect().addValueChangeListener( t -> UI.getCurrent().getPage().setLocation("vehicle/" + t.getValue().getVehicleIdentifier()));
         responsibleForGrid.setHeight("400px");
 
 
@@ -350,7 +386,7 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
         createdWorksGrid.addColumn(CreatePrioritiesRenderer()).setHeader("Priority").setSortable(true).setTextAlign(ColumnTextAlign.CENTER)
                 .setComparator(Comparator.comparingInt(p -> p.getPriority().ordinal()));
 
-        createdWorksGrid.asSingleSelect().addValueChangeListener( t -> UI.getCurrent().navigate("vehicle/" + t.getValue().getVehicleIdentifier()));
+        createdWorksGrid.asSingleSelect().addValueChangeListener( t -> UI.getCurrent().getPage().setLocation("vehicle/" + t.getValue().getVehicleIdentifier()));
         createdWorksGrid.setHeight("400px");
 
 
@@ -366,7 +402,7 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
         updatedWorksGrid.addColumn(CreatePrioritiesRenderer()).setHeader("Priority").setSortable(true).setTextAlign(ColumnTextAlign.CENTER)
                 .setComparator(Comparator.comparingInt(p -> p.getPriority().ordinal()));
 
-        updatedWorksGrid.asSingleSelect().addValueChangeListener( t -> UI.getCurrent().navigate("vehicle/" + t.getValue().getVehicleIdentifier()));
+        updatedWorksGrid.asSingleSelect().addValueChangeListener( t -> UI.getCurrent().getPage().setLocation("vehicle/" + t.getValue().getVehicleIdentifier()));
         updatedWorksGrid.setHeight("400px");
 
 
@@ -394,7 +430,7 @@ public class UserDetailsView extends VerticalLayout implements HasUrlParameter<S
         updatedVehiclesGrid.addColumn(VehicleDisplay::getStand).setHeader("Stand").setSortable(true).setTextAlign(ColumnTextAlign.CENTER);
         updatedVehiclesGrid.addColumn(VehicleDisplay::getWorkCount).setHeader("Works").setSortable(true).setTextAlign(ColumnTextAlign.CENTER);
 
-        updatedVehiclesGrid.asSingleSelect().addValueChangeListener( t -> UI.getCurrent().navigate("vehicle/" + t.getValue().getIdentifier()));
+        updatedVehiclesGrid.asSingleSelect().addValueChangeListener( t -> UI.getCurrent().getPage().setLocation("vehicle/" + t.getValue().getIdentifier()));
         updatedVehiclesGrid.setHeight("400px");
     }
 
