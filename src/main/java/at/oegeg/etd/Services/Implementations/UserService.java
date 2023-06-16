@@ -71,6 +71,7 @@ public class UserService
 
     public UserDisplay FindByIdentifier(String identifier)
     {
+        UserEntity user = _userRepository.findByIdentifier(identifier).orElse(null);
         return UserEntityToDisplay(_userRepository.findByIdentifier(identifier).orElseThrow());
     }
     public boolean ExistsByIdentifier(String identifier)

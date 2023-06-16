@@ -24,8 +24,10 @@ import com.vaadin.flow.server.StreamResource;
 import jakarta.annotation.security.RolesAllowed;
 
 import java.io.ByteArrayInputStream;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static at.oegeg.etd.Security.SecurityService.GetAuthorities;
 import static at.oegeg.etd.views.Renderers.BadgeRenderer.CreatePrioritiesRenderer;
@@ -39,6 +41,7 @@ public class VehicleDetailsView extends VerticalLayout implements HasUrlParamete
     private final VehicleService _vehicleService;
     private final WorkService _workService;
     private String identifier;
+    private byte[] oldPdf;
 
     // == view fields ==
     WorkForm workForm;
@@ -48,6 +51,7 @@ public class VehicleDetailsView extends VerticalLayout implements HasUrlParamete
     Button addWorkButton = new Button();
     Button downloadPdfButton = new Button("Download Pdf");
     Anchor downloadPdfAnchor;
+    HorizontalLayout toolbar;
 
 
     // == constructor ==
@@ -98,7 +102,7 @@ public class VehicleDetailsView extends VerticalLayout implements HasUrlParamete
 
         addWorkButton.setText("Add Work");
         addWorkButton.addClickListener(e -> AddWork());
-        HorizontalLayout toolbar = new HorizontalLayout(new H1("Works"),addWorkButton, downloadPdfAnchor);
+        toolbar = new HorizontalLayout(new H1("Works"),addWorkButton);
         toolbar.setDefaultVerticalComponentAlignment(Alignment.CENTER);
 
         VerticalLayout content1 = new VerticalLayout(new H1("Vehicle"), vehicleGrid,toolbar, workGrid);
@@ -130,11 +134,19 @@ public class VehicleDetailsView extends VerticalLayout implements HasUrlParamete
         {
             VehicleDisplay vehicle = _vehicleService.FindVehicleByIdentifier(identifier);
             byte[] pdf = _vehicleService.DownloadVehiclePdf(identifier);
+            if(!Arrays.equals(pdf,oldPdf))
+                oldPdf = pdf;
+
+            if(toolbar.getChildren().collect(Collectors.toList()).contains(downloadPdfAnchor))
+                toolbar.remove(downloadPdfAnchor);
 
             StreamResource resource = new StreamResource(vehicle.getNumber() + ".pdf", () -> new ByteArrayInputStream(pdf));
 
+            if(downloadPdfAnchor != null)
+                downloadPdfAnchor.removeAll();
             downloadPdfAnchor = new Anchor(resource, "Open pdf");
             downloadPdfAnchor.getElement().setAttribute("target", "_blank");
+            toolbar.add(downloadPdfAnchor);
         }
         catch (Exception ex)
         {

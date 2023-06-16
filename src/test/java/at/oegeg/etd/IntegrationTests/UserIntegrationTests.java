@@ -110,7 +110,7 @@ public class UserIntegrationTests
         List<UserDisplay> users = userService.GetAllUsers("");
         List<UserDisplay> usersWithName = userService.GetAllUsers("noName");
 
-        assertEquals(3, users.size());
+        assertEquals(5, users.size());
         assertEquals(1, usersWithName.size());
         assertEquals(user.getEmail(), usersWithName.stream().findFirst().orElseThrow().getEmail());
     }

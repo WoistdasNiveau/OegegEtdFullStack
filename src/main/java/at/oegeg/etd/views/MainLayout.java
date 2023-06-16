@@ -4,6 +4,7 @@ package at.oegeg.etd.views;
 import at.oegeg.etd.Services.Implementations.UserService;
 import at.oegeg.etd.Security.SecurityService;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.router.RouterLink;
@@ -95,9 +96,15 @@ public class MainLayout extends AppLayout {
         list.addClassNames(Display.FLEX, Gap.SMALL, ListStyleType.NONE, Margin.NONE, Padding.NONE);
         nav.add(list);
 
-        for (MenuItemInfo menuItem : createMenuItems()) {
-            list.add(menuItem);
+        try {
+            for (MenuItemInfo menuItem : createMenuItems()) {
+                list.add(menuItem);
 
+            }
+        }
+        catch (Exception ex)
+        {
+            _securityService.Logout();
         }
         list.add();
 
