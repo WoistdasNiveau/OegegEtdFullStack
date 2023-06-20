@@ -175,7 +175,7 @@
 
     </dependencies>
 
-    <build>
+   <!-- <build>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -190,8 +190,8 @@
                 </configuration>
             </plugin>
         </plugins>
-    </build>
-   <!-- <build>
+    </build> -->
+   <build>
         <defaultGoal>spring-boot:run</defaultGoal>
         <plugins>
             <plugin>
@@ -218,9 +218,9 @@
             </plugin>
 
         </plugins>
-    </build> -->
+    </build>
 
-    <profiles>
+    <!--<profiles>
         <profile>
             <id>production</id>
             <build>
@@ -243,14 +243,14 @@
                 </plugins>
             </build>
         </profile>
-    </profiles>
+    </profiles> -->
 
-    <!-- <profiles>
+    <profiles>
         <profile>
-             Production mode is activated using -Pproduction
+             <!--Production mode is activated using -Pproduction -->
             <id>production</id>
             <dependencies>
-                 Exclude development dependencies from production
+                 <!--Exclude development dependencies from production -->
                 <dependency>
                     <groupId>com.vaadin</groupId>
                     <artifactId>vaadin-core</artifactId>
@@ -306,7 +306,7 @@
                         </executions>
                     </plugin>
 
-                    Runs the integration tests (*IT) after the server is started
+                    <!--Runs the integration tests (*IT) after the server is started -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
@@ -323,7 +323,7 @@
                             <enableAssertions>true</enableAssertions>
                         </configuration>
                     </plugin>
-                    <plugin>
+                    <!--<plugin>
                         <groupId>org.springframework.boot</groupId>
                         <artifactId>spring-boot-maven-plugin</artifactId>
                         <configuration>
@@ -334,10 +334,10 @@
                                 </exclude>
                             </excludes>
                         </configuration>
-                    </plugin>
+                    </plugin> -->
                 </plugins>
             </build>
         </profile>
 
-    </profiles> -->
+    </profiles>
 </project>
