@@ -1,0 +1,19 @@
+FROM maven:3.8.4-openjdk-17 as maven-builder
+
+COPY src /etd/src
+
+COPY pom.xml /etd
+
+COPY frontend /etd/frontend
+
+RUN mvn -f /etd/pom.xml clean install -Pproduction -DskipTests
+
+FROM openjdk:17-alpine
+
+COPY --from=maven-builder etd/target/oegegetdjava-1.0-SNAPSHOT.jar oegegetdjava-1.0-SNAPSHOT.jar
+
+WORKDIR /etd
+
+EXPOSE 8080
+
+ENTRYPOINT ["java","-jar","/oegegetdjava-1.0-SNAPSHOT.jar"]

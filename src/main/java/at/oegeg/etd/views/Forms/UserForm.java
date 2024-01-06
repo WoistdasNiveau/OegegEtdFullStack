@@ -34,7 +34,7 @@ public class UserForm extends FormLayout
     // == view Fields ==
     TextField nameField = new TextField("Name");
     EmailField emailField = new EmailField("Email");
-    NumberField telephoneField = new NumberField("Telephone Number");
+    TextField telephoneField = new TextField("Telephone Number");
     public Select<Role> roleSelect = new Select<>();
     Button saveButton = new Button("Save");
     public Button deleteButton = new Button("Delete");

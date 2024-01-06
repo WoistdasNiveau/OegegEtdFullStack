@@ -4,29 +4,27 @@ import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.converter.Converter;
 
-public class TelephoneNumberConverter implements Converter<Double,String>
-{
+import java.util.regex.Pattern;
 
+public class TelephoneNumberConverter implements Converter<String,String>
+{
+    String regex = "^[+\\d\\s]+$";
     @Override
-    public Result<String> convertToModel(Double s, ValueContext valueContext)
+    public Result<String> convertToModel(String s, ValueContext valueContext)
     {
-        if (s != null)
+        if (s != null && Pattern.compile(regex).matcher(s).matches())
         {
         String number = s.toString();
         number = number.replaceAll("\\s", "");
         number = number.replaceAll("\\+", "00");
         return Result.ok(number);
         }
-        return Result.ok(null);
+        return Result.error("Telephone number can only contain integers, + or blank lines!");
     }
 
     @Override
-    public Double convertToPresentation(String s, ValueContext valueContext)
+    public String convertToPresentation(String s, ValueContext valueContext)
     {
-        if(s != null)
-        {
-            return Double.valueOf(s);
-        }
-        return null;
+        return s;
     }
 }

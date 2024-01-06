@@ -142,15 +142,15 @@ public class UserService
                             .build();
             SaveUser(display);
         }
-        //if(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier("defaultUser").isEmpty())
-        //{
-        //    _userRepository.save(UserEntity.builder()
-        //            .identifier("defaultUser")
-        //            .name("-")
-        //            .password(UUID.randomUUID().toString())
-        //            .isUserEnabled(false)
-        //            .build());
-        //}
+        if(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier("defaultUser").isEmpty())
+        {
+            _userRepository.save(UserEntity.builder()
+                    .identifier("defaultUser")
+                    .name("-")
+                    .password(UUID.randomUUID().toString())
+                    .isUserEnabled(false)
+                    .build());
+        }
         //if(_userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier("User").isEmpty())
         //{
         //    _userRepository.save(UserEntity.builder()

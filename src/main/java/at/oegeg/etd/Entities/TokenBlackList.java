@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 public class TokenBlackList
 {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     public long id;
     @Column(columnDefinition = "LONGTEXT")
     public String token;
