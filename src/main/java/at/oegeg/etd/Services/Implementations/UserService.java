@@ -69,6 +69,14 @@ public class UserService
         _userRepository.save(user);
     }
 
+    public void ResetPassword(String email)
+    {
+        UserEntity user = _userRepository.findByEmailOrTelephoneNumberOrNameOrIdentifier(email).orElse(null);
+        if ( user == null)
+            return;
+        _emailSenderService.ChangePasswordMail(email, user.getIdentifier(), user.getName());
+    }
+
     public UserDisplay FindByIdentifier(String identifier)
     {
         return UserEntityToDisplay(_userRepository.findByIdentifier(identifier).orElseThrow());

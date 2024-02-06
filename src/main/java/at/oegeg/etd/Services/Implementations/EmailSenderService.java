@@ -8,7 +8,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import static at.oegeg.etd.Constants.SENDERMAIL;
+import static at.oegeg.etd.Constants.Constants.SENDERMAIL;
 
 
 @Service
@@ -23,7 +23,7 @@ public class EmailSenderService
         String body = "Dear " + name + "!" + System.lineSeparator() + System.lineSeparator() +
                 "Your Group Leader has successfully created your OegegEtd Account. Please use following link to choose a " +
                 "password and activate your account." + System.lineSeparator() + System.lineSeparator() +
-                "http://localhost:47532/init/" + token;
+                "http://localhost:8081/init/" + token;
 
         message.setFrom(SENDERMAIL);
         message.setTo(email);
@@ -40,7 +40,7 @@ public class EmailSenderService
         String body = "Dear " + name + "!" + System.lineSeparator() + System.lineSeparator() +
         "If you have requested to change your password, please follow the link below. If you did not request to change your password," +
                 " ignore this email!" + System.lineSeparator() + System.lineSeparator() +
-                "http://localhost:47532/init/" + token;
+                "http://localhost:8081/init/" + token;
 
         message.setFrom(SENDERMAIL);
         message.setTo(email);

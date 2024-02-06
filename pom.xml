@@ -4,8 +4,8 @@
     <modelVersion>4.0.0</modelVersion>
     <!-- Project from https://start.vaadin.com/project/79a111d8-2151-40c2-856a-a9792cf4c63e -->
     <groupId>at.oegeg.etd</groupId>
-    <artifactId>oegegetdjava</artifactId>
-    <name>oegegetdjava</name>
+    <artifactId>oegegetdwebsite</artifactId>
+    <name>OegegEtdWebsite</name>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 

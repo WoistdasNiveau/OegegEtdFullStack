@@ -1,4 +1,4 @@
-package at.oegeg.etd;
+package at.oegeg.etd.Constants;
 
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -8,7 +8,7 @@ import java.security.Key;
 public class Constants
 {
     public static final String AUTHORIZATIONHEADER = "Authorization";
-    private static final String JWTKEY = "337436773979244226452948404D635166546A576E5A7234753778214125432A462D4A614E645267556B587" +
+    public static final String JWTKEY = "337436773979244226452948404D635166546A576E5A7234753778214125432A462D4A614E645267556B587" +
             "03273357638792F423F4528472B4B6250655368566D597133743677397A24432646294A404D635166546A576E5A7234753778214125442A472D" +
             "4B6150645267556B58703273357638792F423F4528482B4D6251655468566D597133743677397A24432646294A404E635266556A586E5A72347" +
             "53778214125442A472D4B6150645367566B59703373357638792F423F4528482B4D6251655468576D5A7134743777397A24432646294A404E63" +
@@ -21,10 +21,8 @@ public class Constants
 
     public static final String SENDERMAIL = "OegegEtd@gmail.com";
 
-    // == methods ==
-    public static Key GETSIGNINGKEY()
+    public static Key GetSigningKey()
     {
-        byte[] bytes = Decoders.BASE64.decode(JWTKEY);
-        return Keys.hmacShaKeyFor(bytes);
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(JWTKEY));
     }
 }

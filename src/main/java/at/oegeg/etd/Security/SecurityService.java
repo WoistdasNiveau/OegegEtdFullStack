@@ -19,7 +19,7 @@ public class SecurityService
 {
     public void Logout()
     {
-        UI.getCurrent().getPage().setLocation("/");
+        UI.getCurrent().getPage().setLocation("");
 
         SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
 

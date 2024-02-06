@@ -20,29 +20,29 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-@EnableWebSecurity
-@Configuration
-@RequiredArgsConstructor
-public class SecurityConfig extends VaadinWebSecurity
-{
-    private final AuthenticationProvider authenticationProvider;
-
-    @Override
-    protected void configure(HttpSecurity http) throws Exception
-    {
-        http.authorizeHttpRequests(auth -> auth.requestMatchers(new AntPathRequestMatcher("/api/v1/vehicles"))
-                .permitAll());
-
-        super.configure(http);
-
-        setLoginView(http, LoginView.class);
-
-    }
-
-    @Override
-    protected void configure(WebSecurity web) throws Exception
-    {
-        super.configure(web);
-    }
-
-}
+//@EnableWebSecurity
+//@Configuration
+//@RequiredArgsConstructor
+//public class SecurityConfig extends VaadinWebSecurity
+//{
+//    private final AuthenticationProvider authenticationProvider;
+//
+//    @Override
+//    protected void configure(HttpSecurity http) throws Exception
+//    {
+//        http.authorizeHttpRequests(auth -> auth.requestMatchers(new AntPathRequestMatcher("/api/**")).authenticated());
+//        http.csrf().ignoringRequestMatchers("/api/**");
+//
+//        super.configure(http);
+//
+//        setLoginView(http, LoginView.class);
+//
+//    }
+//
+//    @Override
+//    protected void configure(WebSecurity web) throws Exception
+//    {
+//        super.configure(web);
+//    }
+//
+//}
