@@ -3,6 +3,7 @@ package at.oegeg.etd.Config;
 import at.oegeg.etd.Security.Services.JwtAuthenticationFilter;
 import at.oegeg.etd.views.LoginView;
 import com.vaadin.flow.spring.security.VaadinWebSecurity;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -17,6 +18,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
@@ -32,6 +34,7 @@ public class MultiSecurityConfig
         private final JwtAuthenticationFilter _jwtAuthenticationFilter;
         private final AuthenticationProvider _authenticationProvider;
         private final RestAuthenticationEntryPoint _restAuthenticationEntryPoint;
+        private final AuthenticationFailureHandler authenticationFailureHandler;
         @Autowired
         private ApplicationContext applicationContext;
 
@@ -49,8 +52,15 @@ public class MultiSecurityConfig
                             .anyRequest()
                             .authenticated())
                     .httpBasic()
-                    .authenticationEntryPoint(_restAuthenticationEntryPoint)
-                    .and().build();
+                    .and()
+                    .exceptionHandling()
+                    .authenticationEntryPoint(_restAuthenticationEntryPoint) // Handle authentication errors
+                    .accessDeniedHandler((request, response, accessDeniedException) -> {
+                        response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied"); // Handle access denied errors
+                    })
+                    .and()
+                    .addFilterBefore(_jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // Move JwtAuthenticationFilter after UsernamePasswordAuthenticationFilter
+                    .build();
                     //.csrf(AbstractHttpConfigurer::disable)
                     //.authorizeHttpRequests(auth -> auth
                     //        .requestMatchers("/**").permitAll()
@@ -80,7 +90,6 @@ public class MultiSecurityConfig
         protected void configure(HttpSecurity http) throws Exception
         {
             super.configure(http);
-
             setLoginView(http, LoginView.class);
 
         }
